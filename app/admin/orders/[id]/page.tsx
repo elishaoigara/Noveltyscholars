@@ -9,7 +9,7 @@ import { AdminStatusDropdown } from "./AdminStatusDropdown";
 import { AdminFileUpload } from "./AdminFileUpload";
 import { OrderChatWrapper } from "@/app/dashboard/orders/[id]/OrderChatWrapper";
 import { OrderFilesList } from "@/app/dashboard/orders/[id]/OrderFilesList";
-import type { Order, OrderFile, OrderStatus } from "@/lib/types";
+import type { Order, OrderFile, OrderStatus, Profile } from "@/lib/types";
 
 const statusLabel: Record<OrderStatus, string> = {
   PENDING_PAYMENT: "Payment Pending",
@@ -37,7 +37,7 @@ export default async function AdminOrderDetailPage({
     .from("profiles")
     .select("role, full_name")
     .eq("id", user.id)
-    .single();
+    .single<Pick<Profile, "role" | "full_name">>();
 
   if (!profile || profile.role !== "ADMIN") redirect("/dashboard");
 

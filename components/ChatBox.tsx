@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
-import type { Message } from "@/lib/types";
+import type { Message, Profile } from "@/lib/types";
 
 interface ChatBoxProps {
   orderId: string;
@@ -62,7 +62,7 @@ export function ChatBox({ orderId, userId, profileName = "User" }: ChatBoxProps)
             .from("profiles")
             .select("full_name")
             .eq("id", newMsg.user_id)
-            .single()
+            .single<Pick<Profile, "full_name">>()
             .then(({ data }) => {
               setMessages((prev) => [
                 ...prev,

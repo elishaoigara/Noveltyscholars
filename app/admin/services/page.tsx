@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ServicesManager } from "./ServicesManager";
-import type { Service } from "@/lib/types";
+import type { Service, Profile } from "@/lib/types";
 
 export default async function AdminServicesPage() {
   const supabase = await createClient();
@@ -15,7 +15,7 @@ export default async function AdminServicesPage() {
     .from("profiles")
     .select("role")
     .eq("id", user.id)
-    .single();
+    .single<Pick<Profile, "role">>();
 
   if (!profile || profile.role !== "ADMIN") redirect("/dashboard");
 

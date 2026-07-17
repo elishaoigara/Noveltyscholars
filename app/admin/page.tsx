@@ -3,6 +3,7 @@ import { FileText, DollarSign, Clock, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { formatCurrency } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { Profile } from "@/lib/types";
 
 export default async function AdminDashboardPage() {
   const supabase = await createClient();
@@ -16,7 +17,7 @@ export default async function AdminDashboardPage() {
     .from("profiles")
     .select("role")
     .eq("id", user.id)
-    .single();
+    .single<Pick<Profile, "role">>();
 
   if (!profile || profile.role !== "ADMIN") redirect("/dashboard");
 

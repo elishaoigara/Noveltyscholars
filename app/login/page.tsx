@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import type { Profile } from "@/lib/types";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email"),
@@ -58,7 +59,7 @@ export default function LoginPage() {
         .from("profiles")
         .select("role")
         .eq("id", authData.user.id)
-        .single();
+        .single<Pick<Profile, "role">>();
 
       if (profile?.role === "ADMIN") {
         router.push("/admin");

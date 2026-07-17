@@ -3,6 +3,7 @@ import Link from "next/link";
 import { LayoutDashboard, FileText, Settings, LogOut } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
+import type { Profile } from "@/lib/types";
 
 async function signOutAction() {
   "use server";
@@ -29,7 +30,7 @@ export default async function AdminLayout({
     .from("profiles")
     .select("role, full_name")
     .eq("id", user.id)
-    .single();
+    .single<Pick<Profile, "role" | "full_name">>();
 
   if (!profile || profile.role !== "ADMIN") {
     redirect("/dashboard");

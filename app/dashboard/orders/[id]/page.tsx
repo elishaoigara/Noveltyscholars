@@ -8,7 +8,7 @@ import { OrderFilesList } from "./OrderFilesList";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import type { Order, OrderFile, OrderStatus } from "@/lib/types";
+import type { Order, OrderFile, OrderStatus, Profile } from "@/lib/types";
 
 const statusLabel: Record<OrderStatus, string> = {
   PENDING_PAYMENT: "Payment Pending",
@@ -72,7 +72,7 @@ export default async function StudentOrderDetailPage({
     .from("profiles")
     .select("full_name")
     .eq("id", user.id)
-    .single();
+    .single<Pick<Profile, "full_name">>();
 
   const canRequestRevision = order.status === "DELIVERED";
   const canMarkComplete = order.status === "DELIVERED";

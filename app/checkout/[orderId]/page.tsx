@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import type { Order } from "@/lib/types";
+import type { Order, Profile } from "@/lib/types";
 
 export default function CheckoutPage() {
   const { orderId } = useParams<{ orderId: string }>();
@@ -53,7 +53,7 @@ export default function CheckoutPage() {
           .from("profiles")
           .select("role")
           .eq("id", user.id)
-          .single();
+          .single<Pick<Profile, "role">>();
 
         if (!profile || profile.role !== "ADMIN") {
           router.push("/dashboard");

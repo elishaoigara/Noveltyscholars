@@ -1,7 +1,7 @@
 import { updateSession } from "@/lib/supabase/middleware";
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import type { Database } from "@/lib/types";
+import type { Database, Profile } from "@/lib/types";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -45,7 +45,7 @@ export async function middleware(request: NextRequest) {
         .from("profiles")
         .select("role")
         .eq("id", user.id)
-        .single();
+        .single<Pick<Profile, "role">>();
 
       if (!profile || profile.role !== "ADMIN") {
         return NextResponse.redirect(new URL("/dashboard", request.url));

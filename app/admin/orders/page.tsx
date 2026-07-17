@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { AdminOrdersTable } from "./AdminOrdersTable";
-import type { Order, OrderStatus } from "@/lib/types";
+import type { Order, OrderStatus, Profile } from "@/lib/types";
 
 export default async function AdminOrdersPage() {
   const supabase = await createClient();
@@ -16,7 +16,7 @@ export default async function AdminOrdersPage() {
     .from("profiles")
     .select("role")
     .eq("id", user.id)
-    .single();
+    .single<Pick<Profile, "role">>();
 
   if (!profile || profile.role !== "ADMIN") redirect("/dashboard");
 
