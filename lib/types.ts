@@ -81,7 +81,7 @@ export type Database = {
       orders: {
         Row: Order;
         Insert: Omit<Order, "id" | "created_at" | "updated_at">;
-        Update: Partial<Omit<Order, "id" | "created_at" | "updated_at">>;
+        Update: Partial<Omit<Order, "id" | "created_at">>;
         Relationships: [
           {
             foreignKeyName: "orders_user_id_fkey";

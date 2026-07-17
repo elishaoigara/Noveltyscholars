@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import type { Profile } from "@/lib/types";
 
 export function Header() {
-  const [user, setUser] = useState<{ id: string; email: string } | null>(null);
+  const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
