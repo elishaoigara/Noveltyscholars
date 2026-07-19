@@ -9,7 +9,7 @@ export function Footer() {
           {/* Brand */}
           <div className="space-y-3">
             <Link href="/" className="text-white font-bold text-xl">
-              📚 NoveltyScholars
+              {"📚 NoveltyScholars"}
             </Link>
             <p className="text-sm text-gray-400">
               Professional academic writing services for students worldwide.
@@ -24,50 +24,32 @@ export function Footer() {
             </h3>
             <ul className="space-y-2">
               <li>
-                <Link
-                  href="/"
-                  className="text-sm text-gray-400 hover:text-white transition-colors"
-                >
+                <Link href="/" className="text-sm text-gray-400 hover:text-white transition-colors">
                   Home
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/services"
-                  className="text-sm text-gray-400 hover:text-white transition-colors"
-                >
+                <Link href="/services" className="text-sm text-gray-400 hover:text-white transition-colors">
                   Our Services
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/services/take-my-online-class"
-                  className="text-sm text-gray-400 hover:text-white transition-colors"
-                >
+                <Link href="/services/take-my-online-class" className="text-sm text-gray-400 hover:text-white transition-colors">
                   Take My Online Class
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/services/take-my-online-exam"
-                  className="text-sm text-gray-400 hover:text-white transition-colors"
-                >
+                <Link href="/services/take-my-online-exam" className="text-sm text-gray-400 hover:text-white transition-colors">
                   Take My Online Exam
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/pricing"
-                  className="text-sm text-gray-400 hover:text-white transition-colors"
-                >
+                <Link href="/pricing" className="text-sm text-gray-400 hover:text-white transition-colors">
                   Pricing
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/order"
-                  className="text-sm text-gray-400 hover:text-white transition-colors"
-                >
+                <Link href="/order" className="text-sm text-gray-400 hover:text-white transition-colors">
                   Order Now
                 </Link>
               </li>
@@ -81,18 +63,12 @@ export function Footer() {
             </h3>
             <ul className="space-y-2">
               <li>
-                <Link
-                  href="/privacy-policy"
-                  className="text-sm text-gray-400 hover:text-white transition-colors"
-                >
+                <Link href="/privacy-policy" className="text-sm text-gray-400 hover:text-white transition-colors">
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/terms"
-                  className="text-sm text-gray-400 hover:text-white transition-colors"
-                >
+                <Link href="/terms" className="text-sm text-gray-400 hover:text-white transition-colors">
                   Terms &amp; Conditions
                 </Link>
               </li>
@@ -111,7 +87,7 @@ export function Footer() {
                   href="mailto:noveltyscholars@gmail.com"
                   className="hover:text-white transition-colors"
                 >
-                  noveltyscholars@gmail.com
+                  {"noveltyscholars@gmail.com"}
                 </a>
               </li>
               <li className="flex items-center gap-2">
@@ -120,7 +96,7 @@ export function Footer() {
                   href="tel:+12095600466"
                   className="hover:text-white transition-colors"
                 >
-                  +1 (209) 560-0466
+                  {"+1 (209) 560-0466"}
                 </a>
               </li>
               <li className="text-green-400 font-medium">Available 24/7</li>

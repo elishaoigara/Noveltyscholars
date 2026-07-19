@@ -49,10 +49,11 @@ export function Header() {
     window.location.href = "/";
   };
 
-  // Extract icon to avoid ternary-in-JSX parse error
   const menuIcon = mobileOpen
     ? <X className="h-5 w-5" />
     : <Menu className="h-5 w-5" />;
+
+  const WHATSAPP = "https://api.whatsapp.com/send?phone=12095600466&text=Assignment%20help";
 
   return (
     <header
@@ -107,7 +108,7 @@ export function Header() {
             className="flex items-center gap-1 text-sm font-semibold text-primary border border-primary rounded-full px-3 py-1 hover:bg-primary hover:text-white transition-colors"
           >
             <Phone className="h-3.5 w-3.5" />
-            +1 (209) 560-0466
+            {"+1 (209) 560-0466"}
           </a>
         </nav>
 
@@ -115,9 +116,7 @@ export function Header() {
         <div className="hidden lg:flex items-center gap-3">
           {user ? (
             <>
-              <Link
-                href={profile?.role === "ADMIN" ? "/admin" : "/dashboard"}
-              >
+              <Link href={profile?.role === "ADMIN" ? "/admin" : "/dashboard"}>
                 <Button variant="ghost" size="sm" className="gap-2">
                   <LayoutDashboard className="h-4 w-4" />
                   {profile?.full_name ?? user.email!}
@@ -147,7 +146,7 @@ export function Header() {
           </Link>
         </div>
 
-        {/* Mobile Hamburger — icon extracted above to avoid JSX parse error */}
+        {/* Mobile Hamburger */}
         <button
           className="lg:hidden p-2 rounded-lg hover:bg-gray-100"
           onClick={() => setMobileOpen(!mobileOpen)}
@@ -191,7 +190,7 @@ export function Header() {
             href="tel:+12095600466"
             className="block text-sm font-semibold text-primary py-2"
           >
-            +1 (209) 560-0466
+            {"+1 (209) 560-0466"}
           </a>
 
           <div className="pt-2 border-t space-y-2">
