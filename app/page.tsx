@@ -147,7 +147,7 @@ export default async function HomePage() {
               and academic level.
             </p>
           </div>
-          <PricingCalculator services={servicesData} />
+          <PricingCalculator basePrice={15} showPromoCode />
         </div>
       </section>
 
