@@ -61,11 +61,13 @@ export function Header() {
   return (
     <header
       className={`sticky top-0 z-50 w-full transition-all ${
-        scrolled ? "glass shadow-sm" : "bg-white/95 dark:bg-slate-900/95"
+        scrolled
+          ? "bg-white/80 dark:bg-slate-900/80 backdrop-blur-md shadow-sm"
+          : "bg-white dark:bg-slate-900"
       }`}
     >
-      {/* Top announcement bar */}
-      <div className="bg-primary text-white text-center text-[11px] sm:text-xs py-1.5 px-3 sm:px-4 leading-snug">
+      {/* Announcement bar */}
+      <div className="bg-primary text-white text-center text-[11px] sm:text-xs py-1.5 px-3 leading-snug">
         Order your Assignment today and save 15% with code{" "}
         <strong>ESSAYHELP</strong>
       </div>
@@ -78,8 +80,7 @@ export function Header() {
           onClick={() => setMobileOpen(false)}
         >
           <span className="text-2xl">☁️</span>
-          <span className="hidden xs:inline">NoveltyScholars</span>
-          <span className="inline xs:hidden">NS</span>
+          <span>NoveltyScholars</span>
         </Link>
 
         {/* Desktop Nav */}
@@ -90,7 +91,7 @@ export function Header() {
               href={link.href}
               className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary transition-colors whitespace-nowrap"
             >
-              {link.label.toUpperCase()}
+              {link.label}
             </Link>
           ))}
           
@@ -102,13 +103,13 @@ export function Header() {
           </a>
         </nav>
 
-        {/* Desktop Auth + Theme */}
+        {/* Desktop Auth + Theme Toggle */}
         <div className="hidden lg:flex items-center gap-2 xl:gap-3">
           <ThemeToggle />
           {user ? (
             <>
               <Link href={profile?.role === "ADMIN" ? "/admin" : "/dashboard"}>
-                <Button variant="ghost" size="sm" className="gap-2 max-w-[140px]">
+                <Button variant="ghost" size="sm" className="gap-2 max-w-[160px]">
                   <LayoutDashboard className="h-4 w-4 shrink-0" />
                   <span className="truncate">{profile?.full_name ?? user.email!}</span>
                 </Button>
@@ -130,7 +131,7 @@ export function Header() {
           </Link>
         </div>
 
-        {/* Mobile controls */}
+        {/* Mobile: Theme Toggle + Hamburger */}
         <div className="flex items-center gap-2 lg:hidden">
           <ThemeToggle />
           <button
@@ -145,7 +146,7 @@ export function Header() {
 
       {/* Mobile Menu */}
       {mobileOpen && (
-        <div className="lg:hidden border-t border-border glass px-4 pb-4 pt-2 space-y-1 max-h-[80vh] overflow-y-auto">
+        <div className="lg:hidden border-t border-border bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-4 pb-4 pt-2 space-y-1 max-h-[80vh] overflow-y-auto">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.href}
@@ -177,7 +178,7 @@ export function Header() {
                 </Link>
                 <button
                   onClick={() => { handleLogout(); setMobileOpen(false); }}
-                  className="flex items-center gap-2 text-sm font-medium text-red-600 py-2"
+                  className="flex items-center gap-2 text-sm font-medium text-red-500 py-2"
                 >
                   <LogOut className="h-4 w-4" />
                   Logout
