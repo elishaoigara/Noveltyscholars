@@ -61,7 +61,7 @@ export default function TakeMyOnlineClassPage() {
                 Take My Class <ArrowRight className="h-5 w-5" />
               </Button>
             </Link>
-            
+            <a
               href="https://api.whatsapp.com/send?phone=12095600466&text=Take%20my%20online%20class"
               target="_blank"
               rel="noopener noreferrer"

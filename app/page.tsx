@@ -84,7 +84,7 @@ export default async function HomePage() {
                     Order Assignment <ArrowRight className="h-5 w-5" />
                   </Button>
                 </Link>
-                
+                <a
                   href="https://api.whatsapp.com/send?phone=12095600466&text=Assignment%20help"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -467,7 +467,7 @@ export default async function HomePage() {
                   Order Now <ArrowRight className="h-5 w-5" />
                 </Button>
               </Link>
-              
+              <a
                 href="https://api.whatsapp.com/send?phone=12095600466&text=Assignment%20help"
                 target="_blank"
                 rel="noopener noreferrer"

@@ -103,7 +103,7 @@ export function Header() {
           >
             Take My Online Exam
           </Link>
-          
+          <a
             href="tel:+12095600466"
             className="flex items-center gap-1 text-sm font-semibold text-primary border border-primary rounded-full px-3 py-1 hover:bg-primary hover:text-white transition-colors"
           >
@@ -186,7 +186,7 @@ export function Header() {
           >
             Take My Online Exam
           </Link>
-          
+          <a
             href="tel:+12095600466"
             className="block text-sm font-semibold text-primary py-2"
           >
