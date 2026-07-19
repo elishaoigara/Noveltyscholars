@@ -6,6 +6,8 @@ export type Profile = {
   created_at: string;
 };
 
+export type ServiceType = "STANDARD" | "ONLINE_CLASS" | "ONLINE_EXAM";
+
 export type Service = {
   id: string;
   name: string;
@@ -13,6 +15,8 @@ export type Service = {
   description: string;
   base_price: number;
   features: string[];
+  service_type: ServiceType;
+  is_featured: boolean;
   created_at: string;
 };
 
@@ -38,6 +42,12 @@ export type Order = {
   description: string;
   total_price: number;
   status: OrderStatus;
+  lms_platform: string | null;
+  login_credentials: string | null;
+  class_duration: string | null;
+  discount_code: string | null;
+  discount_amount: number;
+  final_price: number | null;
   created_at: string;
   updated_at: string;
 };
@@ -58,6 +68,44 @@ export type Message = {
   user_id: string;
   content: string;
   created_at: string;
+};
+
+export type PromoCode = {
+  id: string;
+  code: string;
+  discount_type: "PERCENTAGE" | "FIXED";
+  discount_value: number;
+  max_uses: number;
+  used_count: number;
+  min_order_amount: number;
+  expires_at: string | null;
+  is_active: boolean;
+  created_at: string;
+};
+
+export type BlogPost = {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string | null;
+  content: string;
+  cover_image: string | null;
+  author: string;
+  is_published: boolean;
+  seo_title: string | null;
+  seo_description: string | null;
+  views: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ContactMessage = {
+  id: string;
+  name: string;
+  email: string;
+  message: string;
+  created_at: string;
+  is_read: boolean;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -128,6 +176,24 @@ export type Database = {
             referencedColumns: ["id"];
           }
         ];
+      };
+      promo_codes: {
+        Row: PromoCode;
+        Insert: Omit<PromoCode, "id" | "created_at">;
+        Update: Partial<Omit<PromoCode, "id" | "created_at">>;
+        Relationships: [];
+      };
+      blog_posts: {
+        Row: BlogPost;
+        Insert: Omit<BlogPost, "id" | "created_at" | "updated_at">;
+        Update: Partial<Omit<BlogPost, "id" | "created_at" | "updated_at">>;
+        Relationships: [];
+      };
+      contact_messages: {
+        Row: ContactMessage;
+        Insert: Omit<ContactMessage, "id" | "created_at">;
+        Update: Partial<Omit<ContactMessage, "id" | "created_at">>;
+        Relationships: [];
       };
     };
     Views: Record<string, never>;
