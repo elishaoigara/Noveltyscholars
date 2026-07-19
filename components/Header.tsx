@@ -3,9 +3,17 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { LayoutDashboard, LogOut, Menu, X, User, Phone } from "lucide-react";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import type { Profile } from "@/lib/types";
+
+const NAV_LINKS = [
+  { href: "/", label: "Home" },
+  { href: "/services", label: "Our Services" },
+  { href: "/services/take-my-online-class", label: "Take My Online Class" },
+  { href: "/services/take-my-online-exam", label: "Take My Online Exam" },
+];
 
 export function Header() {
   const [user, setUser] = useState<SupabaseUser | null>(null);
@@ -16,9 +24,7 @@ export function Header() {
 
   useEffect(() => {
     const getUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
       if (user) {
         const { data: profileData } = await supabase
@@ -30,9 +36,7 @@ export function Header() {
       }
     };
     getUser();
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
       setUser(session?.user ?? null);
     });
     return () => subscription.unsubscribe();
@@ -44,26 +48,25 @@ export function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [mobileOpen]);
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     window.location.href = "/";
   };
 
-  const menuIcon = mobileOpen
-    ? <X className="h-5 w-5" />
-    : <Menu className="h-5 w-5" />;
-
-  const WHATSAPP = "https://api.whatsapp.com/send?phone=12095600466&text=Assignment%20help";
-
   return (
     <header
-      className={`sticky top-0 z-50 w-full transition-shadow ${
-        scrolled ? "bg-white/95 backdrop-blur shadow-sm" : "bg-white"
+      className={`sticky top-0 z-50 w-full transition-all ${
+        scrolled ? "glass shadow-sm" : "bg-white/95 dark:bg-slate-900/95"
       }`}
     >
       {/* Top announcement bar */}
-      <div className="bg-primary text-white text-center text-xs py-1.5 px-4">
-        Order your Assignment today and save 15% with the discount code{" "}
+      <div className="bg-primary text-white text-center text-[11px] sm:text-xs py-1.5 px-3 sm:px-4 leading-snug">
+        Order your Assignment today and save 15% with code{" "}
         <strong>ESSAYHELP</strong>
       </div>
 
@@ -71,129 +74,97 @@ export function Header() {
         {/* Logo */}
         <Link
           href="/"
-          className="flex items-center gap-2 font-bold text-xl text-primary"
+          className="flex items-center gap-2 font-bold text-lg sm:text-xl text-primary shrink-0"
+          onClick={() => setMobileOpen(false)}
         >
-          <span className="text-2xl">📚</span>
-          NoveltyScholars
+          <span className="text-2xl">☁️</span>
+          <span className="hidden xs:inline">NoveltyScholars</span>
+          <span className="inline xs:hidden">NS</span>
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="hidden lg:flex items-center gap-6">
-          <Link
-            href="/"
-            className="text-sm font-medium text-gray-600 hover:text-primary transition-colors"
-          >
-            HOME
-          </Link>
-          <Link
-            href="/services"
-            className="text-sm font-medium text-gray-600 hover:text-primary transition-colors"
-          >
-            Our Services
-          </Link>
-          <Link
-            href="/services/take-my-online-class"
-            className="text-sm font-medium text-gray-600 hover:text-primary transition-colors"
-          >
-            Take My Online Class
-          </Link>
-          <Link
-            href="/services/take-my-online-exam"
-            className="text-sm font-medium text-gray-600 hover:text-primary transition-colors"
-          >
-            Take My Online Exam
-          </Link>
-          <a
+        <nav className="hidden lg:flex items-center gap-5 xl:gap-6">
+          {NAV_LINKS.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary transition-colors whitespace-nowrap"
+            >
+              {link.label.toUpperCase()}
+            </Link>
+          ))}
+          
             href="tel:+12095600466"
-            className="flex items-center gap-1 text-sm font-semibold text-primary border border-primary rounded-full px-3 py-1 hover:bg-primary hover:text-white transition-colors"
+            className="flex items-center gap-1 text-sm font-semibold text-primary border border-primary rounded-full px-3 py-1 hover:bg-primary hover:text-white transition-colors whitespace-nowrap"
           >
             <Phone className="h-3.5 w-3.5" />
-            {"+1 (209) 560-0466"}
+            +1 (209) 560-0466
           </a>
         </nav>
 
-        {/* Desktop Auth */}
-        <div className="hidden lg:flex items-center gap-3">
+        {/* Desktop Auth + Theme */}
+        <div className="hidden lg:flex items-center gap-2 xl:gap-3">
+          <ThemeToggle />
           {user ? (
             <>
               <Link href={profile?.role === "ADMIN" ? "/admin" : "/dashboard"}>
-                <Button variant="ghost" size="sm" className="gap-2">
-                  <LayoutDashboard className="h-4 w-4" />
-                  {profile?.full_name ?? user.email!}
+                <Button variant="ghost" size="sm" className="gap-2 max-w-[140px]">
+                  <LayoutDashboard className="h-4 w-4 shrink-0" />
+                  <span className="truncate">{profile?.full_name ?? user.email!}</span>
                 </Button>
               </Link>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleLogout}
-                className="gap-2"
-              >
+              <Button variant="outline" size="sm" onClick={handleLogout} className="gap-2">
                 <LogOut className="h-4 w-4" />
                 Logout
               </Button>
             </>
           ) : (
             <Link href="/login">
-              <Button variant="ghost" size="sm">
-                Login
-              </Button>
+              <Button variant="ghost" size="sm">Login</Button>
             </Link>
           )}
           <Link href="/order">
-            <Button size="sm" className="bg-primary hover:bg-primary/90">
+            <Button size="sm" className="bg-primary hover:bg-primary/90 shadow-sm">
               Place Order
             </Button>
           </Link>
         </div>
 
-        {/* Mobile Hamburger */}
-        <button
-          className="lg:hidden p-2 rounded-lg hover:bg-gray-100"
-          onClick={() => setMobileOpen(!mobileOpen)}
-        >
-          {menuIcon}
-        </button>
+        {/* Mobile controls */}
+        <div className="flex items-center gap-2 lg:hidden">
+          <ThemeToggle />
+          <button
+            className="p-2 rounded-lg hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label="Toggle menu"
+          >
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Menu */}
       {mobileOpen && (
-        <div className="lg:hidden border-t bg-white px-4 pb-4 pt-2 space-y-3">
-          <Link
-            href="/"
-            className="block text-sm font-medium text-gray-600 hover:text-primary py-2"
-            onClick={() => setMobileOpen(false)}
-          >
-            HOME
-          </Link>
-          <Link
-            href="/services"
-            className="block text-sm font-medium text-gray-600 hover:text-primary py-2"
-            onClick={() => setMobileOpen(false)}
-          >
-            Our Services
-          </Link>
-          <Link
-            href="/services/take-my-online-class"
-            className="block text-sm font-medium text-gray-600 hover:text-primary py-2"
-            onClick={() => setMobileOpen(false)}
-          >
-            Take My Online Class
-          </Link>
-          <Link
-            href="/services/take-my-online-exam"
-            className="block text-sm font-medium text-gray-600 hover:text-primary py-2"
-            onClick={() => setMobileOpen(false)}
-          >
-            Take My Online Exam
-          </Link>
-          <a
+        <div className="lg:hidden border-t border-border glass px-4 pb-4 pt-2 space-y-1 max-h-[80vh] overflow-y-auto">
+          {NAV_LINKS.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary py-2.5 border-b border-border/50"
+              onClick={() => setMobileOpen(false)}
+            >
+              {link.label}
+            </Link>
+          ))}
+          
             href="tel:+12095600466"
-            className="block text-sm font-semibold text-primary py-2"
+            className="flex items-center gap-2 text-sm font-semibold text-primary py-2.5"
           >
-            {"+1 (209) 560-0466"}
+            <Phone className="h-4 w-4" />
+            +1 (209) 560-0466
           </a>
 
-          <div className="pt-2 border-t space-y-2">
+          <div className="pt-3 border-t border-border space-y-2">
             {user ? (
               <>
                 <Link
@@ -205,10 +176,7 @@ export function Header() {
                   {profile?.full_name ?? user.email!}
                 </Link>
                 <button
-                  onClick={() => {
-                    handleLogout();
-                    setMobileOpen(false);
-                  }}
+                  onClick={() => { handleLogout(); setMobileOpen(false); }}
                   className="flex items-center gap-2 text-sm font-medium text-red-600 py-2"
                 >
                   <LogOut className="h-4 w-4" />
@@ -217,9 +185,7 @@ export function Header() {
               </>
             ) : (
               <Link href="/login" onClick={() => setMobileOpen(false)}>
-                <Button variant="ghost" size="sm" className="w-full">
-                  Login
-                </Button>
+                <Button variant="ghost" size="sm" className="w-full">Login</Button>
               </Link>
             )}
             <Link href="/order" onClick={() => setMobileOpen(false)}>
