@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ServicesManager } from "./ServicesManager";
-import type { Service, Profile } from "@/lib/types";
+import type { Profile } from "@/lib/types";
 
 export default async function AdminServicesPage() {
   const supabase = await createClient();
@@ -19,16 +19,6 @@ export default async function AdminServicesPage() {
 
   if (!profile || profile.role !== "ADMIN") redirect("/dashboard");
 
-  const { data: services } = await supabase
-    .from("services")
-    .select("*")
-    .order("created_at", { ascending: true });
-
-  const servicesData: Service[] = (services || []).map((s) => ({
-    ...s,
-    features: Array.isArray(s.features) ? s.features : [],
-  }));
-
   return (
     <div className="space-y-6">
       <div>
@@ -38,7 +28,7 @@ export default async function AdminServicesPage() {
         </p>
       </div>
 
-      <ServicesManager services={servicesData} />
+      <ServicesManager />
     </div>
   );
 }
