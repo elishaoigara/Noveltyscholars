@@ -32,32 +32,32 @@ export default async function HomePage() {
   return (
     <div>
       {/* Hero Section */}
-      <section className="relative bg-gray-800 text-white py-20 lg:py-28">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
+      <section className="relative bg-gray-800 text-white py-24 lg:py-36">
+        <div className="container mx-auto px-6 lg:px-12">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 xl:gap-24 items-center max-w-7xl mx-auto">
             {/* Left: Feature bullets */}
-            <div className="space-y-4 order-2 lg:order-1">
-              <div className="bg-gray-700 rounded-xl p-5 space-y-1">
-                <h3 className="font-bold text-white">Discounts Upto 50%</h3>
-                <p className="text-sm text-gray-300">
+            <div className="space-y-5 order-2 lg:order-1">
+              <div className="bg-gray-700/80 rounded-2xl p-7 space-y-2 border border-gray-600/40">
+                <h3 className="font-bold text-white text-lg">Discounts Upto 50%</h3>
+                <p className="text-gray-300 leading-relaxed">
                   Get massive discounts when you use our service. Rewards for
                   first-time users, referrals, and reaching 10+ orders.
                 </p>
               </div>
-              <div className="bg-gray-700 rounded-xl p-5 space-y-1">
-                <h3 className="font-bold text-white">
+              <div className="bg-gray-700/80 rounded-2xl p-7 space-y-2 border border-gray-600/40">
+                <h3 className="font-bold text-white text-lg">
                   3-Hour Instant Delivery Assurance
                 </h3>
-                <p className="text-sm text-gray-300">
+                <p className="text-gray-300 leading-relaxed">
                   Get your paper fast. That is how we need you to be
                   comfortable.
                 </p>
               </div>
-              <div className="bg-gray-700 rounded-xl p-5 space-y-1">
-                <h3 className="font-bold text-white">
+              <div className="bg-gray-700/80 rounded-2xl p-7 space-y-2 border border-gray-600/40">
+                <h3 className="font-bold text-white text-lg">
                   Qualified Writers Online
                 </h3>
-                <p className="text-sm text-gray-300">
+                <p className="text-gray-300 leading-relaxed">
                   All our writers are verified — Bachelors, Masters, and PhD
                   level.
                 </p>
@@ -65,11 +65,11 @@ export default async function HomePage() {
             </div>
 
             {/* Right: Hero copy */}
-            <div className="space-y-6 order-1 lg:order-2">
-              <h1 className="text-4xl md:text-5xl font-bold leading-tight">
+            <div className="space-y-8 order-1 lg:order-2">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight">
                 Professional Academic Writing Service
               </h1>
-              <p className="text-lg text-gray-300">
+              <p className="text-lg md:text-xl text-gray-300 leading-relaxed">
                 Stuck with tough deadlines and overwhelming assignment
                 guidelines? We ensure that you won&apos;t have to worry about
                 your grades anymore because our qualified professionals will
@@ -79,7 +79,7 @@ export default async function HomePage() {
                 <Link href="/order">
                   <Button
                     size="lg"
-                    className="text-base gap-2 bg-green-500 hover:bg-green-600 text-white border-0"
+                    className="text-base px-8 py-6 gap-2 bg-green-500 hover:bg-green-600 text-white border-0 rounded-full"
                   >
                     Order Assignment <ArrowRight className="h-5 w-5" />
                   </Button>
@@ -92,7 +92,7 @@ export default async function HomePage() {
                   <Button
                     size="lg"
                     variant="outline"
-                    className="text-base gap-2 border-white text-white hover:bg-white hover:text-gray-800"
+                    className="text-base px-8 py-6 gap-2 border-white text-white hover:bg-white hover:text-gray-800 rounded-full"
                   >
                     WhatsApp Us!
                   </Button>
@@ -104,37 +104,37 @@ export default async function HomePage() {
       </section>
 
       {/* Trust Badges */}
-      <section className="py-10 border-y bg-gray-50">
-        <div className="container mx-auto px-4 text-center">
-          <p className="text-lg font-semibold text-gray-700 mb-6">
+      <section className="py-14 border-y bg-gray-50">
+        <div className="container mx-auto px-6 text-center">
+          <p className="text-lg font-semibold text-gray-700 mb-10">
             Reliable Writing Companion of more than 10k students Globally
           </p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center max-w-4xl mx-auto">
-            <div className="space-y-1">
-              <Shield className="h-6 w-6 text-primary mx-auto" />
-              <p className="font-semibold text-sm">Plagiarism-Free</p>
-              <p className="text-xs text-muted-foreground">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-10 text-center max-w-4xl mx-auto">
+            <div className="space-y-2">
+              <Shield className="h-8 w-8 text-primary mx-auto" />
+              <p className="font-semibold">Plagiarism-Free</p>
+              <p className="text-sm text-muted-foreground">
                 100% original work
               </p>
             </div>
-            <div className="space-y-1">
-              <Clock className="h-6 w-6 text-primary mx-auto" />
-              <p className="font-semibold text-sm">On-Time Delivery</p>
-              <p className="text-xs text-muted-foreground">
+            <div className="space-y-2">
+              <Clock className="h-8 w-8 text-primary mx-auto" />
+              <p className="font-semibold">On-Time Delivery</p>
+              <p className="text-sm text-muted-foreground">
                 Always meet deadlines
               </p>
             </div>
-            <div className="space-y-1">
-              <Users className="h-6 w-6 text-primary mx-auto" />
-              <p className="font-semibold text-sm">Expert Writers</p>
-              <p className="text-xs text-muted-foreground">
+            <div className="space-y-2">
+              <Users className="h-8 w-8 text-primary mx-auto" />
+              <p className="font-semibold">Expert Writers</p>
+              <p className="text-sm text-muted-foreground">
                 Qualified professionals
               </p>
             </div>
-            <div className="space-y-1">
-              <Star className="h-6 w-6 text-primary mx-auto" />
-              <p className="font-semibold text-sm">24/7 Support</p>
-              <p className="text-xs text-muted-foreground">
+            <div className="space-y-2">
+              <Star className="h-8 w-8 text-primary mx-auto" />
+              <p className="font-semibold">24/7 Support</p>
+              <p className="text-sm text-muted-foreground">
                 Always here to help
               </p>
             </div>
@@ -143,8 +143,8 @@ export default async function HomePage() {
       </section>
 
       {/* About / Write My Paper Section */}
-      <section className="py-20">
-        <div className="container mx-auto px-4 max-w-4xl">
+      <section className="py-24">
+        <div className="container mx-auto px-6 max-w-4xl">
           <h2 className="text-3xl font-bold mb-4 text-center">
             With us, consider your academic assignments taken care of.
           </h2>
@@ -167,18 +167,18 @@ export default async function HomePage() {
       </section>
 
       {/* How It Works */}
-      <section id="how-it-works" className="py-20 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
+      <section id="how-it-works" className="py-24 bg-gray-50">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16">
             <h2 className="text-3xl font-bold mb-4">
               (How) Does Our Assignment Writing Service Work?
             </h2>
-            <p className="text-gray-600 max-w-xl mx-auto">
+            <p className="text-gray-600 max-w-xl mx-auto text-lg">
               Free up your time by getting your academic assignments done faster
               — without compromising on quality!
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 max-w-6xl mx-auto">
             {[
               {
                 num: 1,
@@ -207,7 +207,7 @@ export default async function HomePage() {
             ].map((step) => (
               <div
                 key={step.num}
-                className={`${step.color} text-white rounded-2xl p-6 space-y-3`}
+                className={`${step.color} text-white rounded-2xl p-8 space-y-4`}
               >
                 <p className="text-sm font-bold opacity-80">{step.num}.</p>
                 <h3 className="font-bold text-lg">{step.title}</h3>
@@ -226,14 +226,14 @@ export default async function HomePage() {
       </section>
 
       {/* What You Get */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
+      <section className="py-24">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16">
             <h2 className="text-3xl font-bold mb-4">
               When You Order an Assignment, You Get
             </h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {[
               {
                 icon: RefreshCw,
@@ -268,7 +268,7 @@ export default async function HomePage() {
             ].map((item, i) => (
               <div
                 key={i}
-                className="bg-white border rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow space-y-3"
+                className="bg-white border rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow space-y-4"
               >
                 <item.icon className="h-8 w-8 text-primary" />
                 <h3 className="font-bold text-lg">{item.title}</h3>
@@ -280,9 +280,9 @@ export default async function HomePage() {
       </section>
 
       {/* Services Grid */}
-      <section id="services" className="py-20 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
+      <section id="services" className="py-24 bg-gray-50">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16">
             <h2 className="text-3xl font-bold mb-4">Academic Services</h2>
             <p className="text-gray-600 max-w-xl mx-auto">
               Standing on guard for your academic liberty. We help you play by
@@ -294,9 +294,9 @@ export default async function HomePage() {
       </section>
 
       {/* Live Pricing Calculator */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
+      <section className="py-24">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16">
             <h2 className="text-3xl font-bold mb-4">Calculate Your Price</h2>
             <p className="text-gray-600 max-w-xl mx-auto">
               Get an instant estimate for your order. The price adjusts based
@@ -308,13 +308,13 @@ export default async function HomePage() {
       </section>
 
       {/* Free Features Section */}
-      <section className="py-20 bg-gray-50">
-        <div className="container mx-auto px-4 max-w-4xl text-center">
+      <section className="py-24 bg-gray-50">
+        <div className="container mx-auto px-6 max-w-4xl text-center">
           <h2 className="text-3xl font-bold mb-4">Free Features Included</h2>
-          <p className="text-gray-600 mb-10">
+          <p className="text-gray-600 mb-12 text-lg">
             Every order comes with these extras at no additional cost.
           </p>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
             {[
               { label: "Plagiarism Report", value: "$15.99" },
               { label: "Formatting", value: "$7.99" },
@@ -323,7 +323,7 @@ export default async function HomePage() {
               { label: "Bibliography", value: "$4.99" },
               { label: "Platinum Writer", value: "$10.91" },
             ].map((f, i) => (
-              <div key={i} className="bg-white border rounded-2xl p-5 shadow-sm">
+              <div key={i} className="bg-white border rounded-2xl p-7 shadow-sm">
                 <p className="text-sm text-gray-500 line-through">{f.value}</p>
                 <p className="font-bold text-gray-800">{f.label}</p>
                 <p className="text-green-600 font-semibold text-sm">FREE</p>
@@ -340,16 +340,16 @@ export default async function HomePage() {
       </section>
 
       {/* Testimonials */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
+      <section className="py-24">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16">
             <h2 className="text-3xl font-bold mb-4">What Our Clients Say</h2>
-            <p className="text-gray-600 max-w-xl mx-auto">
+            <p className="text-gray-600 max-w-xl mx-auto text-lg">
               Thousands of students trust NoveltyScholars for their academic
               needs.
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {[
               {
                 name: "Sarah M.",
@@ -369,7 +369,7 @@ export default async function HomePage() {
             ].map((t, i) => (
               <div
                 key={i}
-                className="bg-white border rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow"
+                className="bg-white border rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow"
               >
                 <div className="flex gap-1 mb-3">
                   {[...Array(5)].map((_, j) => (
@@ -393,9 +393,9 @@ export default async function HomePage() {
       </section>
 
       {/* FAQ */}
-      <section className="py-20 bg-gray-50">
-        <div className="container mx-auto px-4 max-w-3xl">
-          <div className="text-center mb-12">
+      <section className="py-24 bg-gray-50">
+        <div className="container mx-auto px-6 max-w-3xl">
+          <div className="text-center mb-16">
             <h2 className="text-3xl font-bold mb-4">
               Frequently Asked Questions
             </h2>
@@ -435,11 +435,11 @@ export default async function HomePage() {
                 key={i}
                 className="group bg-white border rounded-2xl overflow-hidden"
               >
-                <summary className="flex items-center justify-between p-5 cursor-pointer font-medium">
+                <summary className="flex items-center justify-between p-6 cursor-pointer font-medium text-base">
                   {faq.q}
                   <ChevronDown className="h-5 w-5 transition-transform group-open:rotate-180" />
                 </summary>
-                <div className="px-5 pb-5 text-sm text-gray-600">{faq.a}</div>
+                <div className="px-6 pb-6 text-gray-600 leading-relaxed">{faq.a}</div>
               </details>
             ))}
           </div>
@@ -447,8 +447,8 @@ export default async function HomePage() {
       </section>
 
       {/* Final CTA */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
+      <section className="py-24">
+        <div className="container mx-auto px-6">
           <div className="bg-primary rounded-3xl p-10 md:p-16 text-center text-white max-w-3xl mx-auto">
             <h2 className="text-2xl md:text-3xl font-bold mb-4">
               Ready to Get Your Work Done?

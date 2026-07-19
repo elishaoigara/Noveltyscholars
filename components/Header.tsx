@@ -72,7 +72,7 @@ export function Header() {
         <strong>ESSAYHELP</strong>
       </div>
 
-      <div className="container mx-auto flex h-16 items-center justify-between px-4">
+      <div className="container mx-auto flex h-20 items-center justify-between px-6">
         {/* Logo */}
         <Link
           href="/"
@@ -84,7 +84,7 @@ export function Header() {
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="hidden lg:flex items-center gap-5 xl:gap-6">
+        <nav className="hidden lg:flex items-center gap-6 xl:gap-8">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.href}
@@ -104,7 +104,7 @@ export function Header() {
         </nav>
 
         {/* Desktop Auth + Theme Toggle */}
-        <div className="hidden lg:flex items-center gap-2 xl:gap-3">
+        <div className="hidden lg:flex items-center gap-3 xl:gap-4">
           <ThemeToggle />
           {user ? (
             <>
