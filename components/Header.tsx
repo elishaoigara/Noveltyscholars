@@ -1,19 +1,17 @@
 "use client";
-
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Menu, X, LogOut, User, LayoutDashboard } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { createClient } from "@/lib/supabase/client";
+import { LayoutDashboard, LogOut, Menu, X, User, Phone } from "lucide-react";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 import type { Profile } from "@/lib/types";
 
 export function Header() {
-  const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const router = useRouter();
+  const [mobileOpen, setMobileOpen] = useState(false);
   const supabase = createClient();
 
   useEffect(() => {
@@ -21,49 +19,40 @@ export function Header() {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      setUser(user ?? null);
-
+      setUser(user);
       if (user) {
-        const { data } = await supabase
+        const { data: profileData } = await supabase
           .from("profiles")
           .select("*")
           .eq("id", user.id)
           .single();
-        setProfile(data ?? null);
+        setProfile(profileData);
       }
     };
     getUser();
-
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
-      if (session?.user) {
-        supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", session.user.id)
-          .single()
-          .then(({ data }) => setProfile(data ?? null));
-      } else {
-        setProfile(null);
-      }
     });
+    return () => subscription.unsubscribe();
+  }, [supabase]);
 
+  useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener("scroll", handleScroll);
-
-    return () => {
-      subscription.unsubscribe();
-      window.removeEventListener("scroll", handleScroll);
-    };
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    router.push("/");
-    router.refresh();
+    window.location.href = "/";
   };
+
+  // Extract icon to avoid ternary-in-JSX parse error
+  const menuIcon = mobileOpen
+    ? <X className="h-5 w-5" />
+    : <Menu className="h-5 w-5" />;
 
   return (
     <header
@@ -71,93 +60,140 @@ export function Header() {
         scrolled ? "bg-white/95 backdrop-blur shadow-sm" : "bg-white"
       }`}
     >
+      {/* Top announcement bar */}
+      <div className="bg-primary text-white text-center text-xs py-1.5 px-4">
+        Order your Assignment today and save 15% with the discount code{" "}
+        <strong>ESSAYHELP</strong>
+      </div>
+
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 font-bold text-xl text-primary">
+        <Link
+          href="/"
+          className="flex items-center gap-2 font-bold text-xl text-primary"
+        >
           <span className="text-2xl">📚</span>
           NoveltyScholars
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-8">
-          <Link href="/#services" className="text-sm font-medium text-gray-600 hover:text-primary transition-colors">
-            Services
+        <nav className="hidden lg:flex items-center gap-6">
+          <Link
+            href="/"
+            className="text-sm font-medium text-gray-600 hover:text-primary transition-colors"
+          >
+            HOME
           </Link>
-          <Link href="/pricing" className="text-sm font-medium text-gray-600 hover:text-primary transition-colors">
-            Pricing
+          <Link
+            href="/services"
+            className="text-sm font-medium text-gray-600 hover:text-primary transition-colors"
+          >
+            Our Services
           </Link>
-          <Link href="/#how-it-works" className="text-sm font-medium text-gray-600 hover:text-primary transition-colors">
-            How It Works
+          <Link
+            href="/services/take-my-online-class"
+            className="text-sm font-medium text-gray-600 hover:text-primary transition-colors"
+          >
+            Take My Online Class
           </Link>
+          <Link
+            href="/services/take-my-online-exam"
+            className="text-sm font-medium text-gray-600 hover:text-primary transition-colors"
+          >
+            Take My Online Exam
+          </Link>
+          
+            href="tel:+12095600466"
+            className="flex items-center gap-1 text-sm font-semibold text-primary border border-primary rounded-full px-3 py-1 hover:bg-primary hover:text-white transition-colors"
+          >
+            <Phone className="h-3.5 w-3.5" />
+            +1 (209) 560-0466
+          </a>
         </nav>
 
         {/* Desktop Auth */}
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden lg:flex items-center gap-3">
           {user ? (
             <>
-              <Link href={profile?.role === "ADMIN" ? "/admin" : "/dashboard"}>
+              <Link
+                href={profile?.role === "ADMIN" ? "/admin" : "/dashboard"}
+              >
                 <Button variant="ghost" size="sm" className="gap-2">
                   <LayoutDashboard className="h-4 w-4" />
-                  {profile?.full_name || user.email}
+                  {profile?.full_name ?? user.email!}
                 </Button>
               </Link>
-              <Button variant="outline" size="sm" onClick={handleLogout} className="gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleLogout}
+                className="gap-2"
+              >
                 <LogOut className="h-4 w-4" />
                 Logout
               </Button>
             </>
           ) : (
-            <>
-              <Link href="/login">
-                <Button variant="ghost" size="sm">
-                  Login
-                </Button>
-              </Link>
-              <Link href="/register">
-                <Button size="sm">Register</Button>
-              </Link>
-            </>
+            <Link href="/login">
+              <Button variant="ghost" size="sm">
+                Login
+              </Button>
+            </Link>
           )}
           <Link href="/order">
             <Button size="sm" className="bg-primary hover:bg-primary/90">
-              Order Now
+              Place Order
             </Button>
           </Link>
         </div>
 
-        {/* Mobile Hamburger */}
+        {/* Mobile Hamburger — icon extracted above to avoid JSX parse error */}
         <button
-          className="md:hidden p-2 rounded-lg hover:bg-gray-100"
+          className="lg:hidden p-2 rounded-lg hover:bg-gray-100"
           onClick={() => setMobileOpen(!mobileOpen)}
         >
-          {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          {menuIcon}
         </button>
       </div>
 
       {/* Mobile Menu */}
       {mobileOpen && (
-        <div className="md:hidden border-t bg-white px-4 pb-4 pt-2 space-y-3">
+        <div className="lg:hidden border-t bg-white px-4 pb-4 pt-2 space-y-3">
           <Link
-            href="/#services"
+            href="/"
             className="block text-sm font-medium text-gray-600 hover:text-primary py-2"
             onClick={() => setMobileOpen(false)}
           >
-            Services
+            HOME
           </Link>
           <Link
-            href="/pricing"
+            href="/services"
             className="block text-sm font-medium text-gray-600 hover:text-primary py-2"
             onClick={() => setMobileOpen(false)}
           >
-            Pricing
+            Our Services
           </Link>
           <Link
-            href="/#how-it-works"
+            href="/services/take-my-online-class"
             className="block text-sm font-medium text-gray-600 hover:text-primary py-2"
             onClick={() => setMobileOpen(false)}
           >
-            How It Works
+            Take My Online Class
           </Link>
+          <Link
+            href="/services/take-my-online-exam"
+            className="block text-sm font-medium text-gray-600 hover:text-primary py-2"
+            onClick={() => setMobileOpen(false)}
+          >
+            Take My Online Exam
+          </Link>
+          
+            href="tel:+12095600466"
+            className="block text-sm font-semibold text-primary py-2"
+          >
+            +1 (209) 560-0466
+          </a>
+
           <div className="pt-2 border-t space-y-2">
             {user ? (
               <>
@@ -167,7 +203,7 @@ export function Header() {
                   onClick={() => setMobileOpen(false)}
                 >
                   <User className="h-4 w-4" />
-                  {profile?.full_name || user.email}
+                  {profile?.full_name ?? user.email!}
                 </Link>
                 <button
                   onClick={() => {
@@ -181,22 +217,15 @@ export function Header() {
                 </button>
               </>
             ) : (
-              <>
-                <Link href="/login" onClick={() => setMobileOpen(false)}>
-                  <Button variant="ghost" size="sm" className="w-full">
-                    Login
-                  </Button>
-                </Link>
-                <Link href="/register" onClick={() => setMobileOpen(false)}>
-                  <Button size="sm" className="w-full">
-                    Register
-                  </Button>
-                </Link>
-              </>
+              <Link href="/login" onClick={() => setMobileOpen(false)}>
+                <Button variant="ghost" size="sm" className="w-full">
+                  Login
+                </Button>
+              </Link>
             )}
             <Link href="/order" onClick={() => setMobileOpen(false)}>
               <Button size="sm" className="w-full bg-primary hover:bg-primary/90">
-                Order Now
+                Place Order
               </Button>
             </Link>
           </div>

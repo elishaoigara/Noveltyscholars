@@ -9,8 +9,10 @@ export default async function PricingPage() {
       <div className="text-center mb-12">
         <h1 className="text-3xl md:text-4xl font-bold mb-4">Pricing</h1>
         <p className="text-lg text-gray-600 max-w-xl mx-auto">
-          Transparent pricing based on your requirements. Use the calculator below
-          to get an instant estimate.
+          Transparent pricing based on your requirements. Use the calculator
+          below to get an instant estimate. For Online Class and Exam services,
+          pricing is quoted per order based on scope — contact us for a custom
+          quote.
         </p>
       </div>
 
@@ -31,8 +33,9 @@ export default async function PricingPage() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
-                Each page is approximately 250 words. The more pages you need, the
-                higher the total cost. We charge per page based on the service type.
+                Each page is approximately 250 words. The more pages you need,
+                the higher the total cost. We charge per page based on the
+                service type.
               </p>
             </CardContent>
           </Card>
@@ -46,8 +49,9 @@ export default async function PricingPage() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
-                Tighter deadlines are charged at a premium due to the faster turnaround
-                required. Orders with 7+ days notice are charged at the base rate.
+                Tighter deadlines are charged at a premium due to the faster
+                turnaround required. Orders with 7+ days notice are charged at
+                the base rate.
               </p>
               <div className="mt-2 space-y-1 text-xs text-muted-foreground">
                 <div className="flex justify-between">
@@ -79,8 +83,8 @@ export default async function PricingPage() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
-                Higher academic levels require more expertise and research depth, which
-                affects the pricing.
+                Higher academic levels require more expertise and research
+                depth, which affects the pricing.
               </p>
               <div className="mt-2 space-y-1 text-xs text-muted-foreground">
                 <div className="flex justify-between">
@@ -107,9 +111,29 @@ export default async function PricingPage() {
 
           <div className="text-center text-sm text-muted-foreground">
             <Calculator className="h-4 w-4 inline mr-1" />
-            Formula: Base Price &times; Pages &times; Urgency Multiplier &times; Level
-            Multiplier
+            Formula: Base Price &times; Pages &times; Urgency Multiplier &times;
+            Level Multiplier
           </div>
+        </div>
+      </div>
+
+      {/* Custom Quote CTA */}
+      <div className="mt-12 bg-primary/5 border border-primary/20 rounded-2xl p-8 text-center">
+        <h3 className="text-xl font-bold mb-2">Need a Custom Quote?</h3>
+        <p className="text-gray-600 mb-4">
+          For online classes, exams, or bulk orders, contact us directly.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <a href="mailto:noveltyscholars@gmail.com">
+            <button className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground">
+              noveltyscholars@gmail.com
+            </button>
+          </a>
+          <a href="tel:+12095600466">
+            <button className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
+              +1 (209) 560-0466
+            </button>
+          </a>
         </div>
       </div>
     </div>

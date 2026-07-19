@@ -12,10 +12,11 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "NoveltyScholars - Academic Writing Services",
+  title: "NoveltyScholars - Assignment Writing Service",
   description:
-    "We Get Your Academic Work Done - Plagiarism Free, On Time. Professional academic writing services for students at all levels.",
-  keywords: "academic writing, essay help, paper writing, homework help, research paper",
+    "Professional academic writing service. Essays, research papers, online class help, and online exam help. Plagiarism-free, on time, 24/7 support.",
+  keywords:
+    "assignment help, take my online class, take my online exam, essay writing service, research paper help, homework help",
 };
 
 export default function RootLayout({

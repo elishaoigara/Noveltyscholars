@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Mail, Phone } from "lucide-react";
 
 export function Footer() {
   return (
@@ -12,6 +13,7 @@ export function Footer() {
             </Link>
             <p className="text-sm text-gray-400">
               Professional academic writing services for students worldwide.
+              Essays, research papers, online classes, and exam help.
             </p>
           </div>
 
@@ -23,10 +25,34 @@ export function Footer() {
             <ul className="space-y-2">
               <li>
                 <Link
-                  href="/#services"
+                  href="/"
                   className="text-sm text-gray-400 hover:text-white transition-colors"
                 >
-                  Services
+                  Home
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/services"
+                  className="text-sm text-gray-400 hover:text-white transition-colors"
+                >
+                  Our Services
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/services/take-my-online-class"
+                  className="text-sm text-gray-400 hover:text-white transition-colors"
+                >
+                  Take My Online Class
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/services/take-my-online-exam"
+                  className="text-sm text-gray-400 hover:text-white transition-colors"
+                >
+                  Take My Online Exam
                 </Link>
               </li>
               <li>
@@ -67,7 +93,7 @@ export function Footer() {
                   href="/terms"
                   className="text-sm text-gray-400 hover:text-white transition-colors"
                 >
-                  Terms & Conditions
+                  Terms &amp; Conditions
                 </Link>
               </li>
             </ul>
@@ -79,8 +105,25 @@ export function Footer() {
               Contact
             </h3>
             <ul className="space-y-2 text-sm text-gray-400">
-              <li>support@noveltyscholars.com</li>
-              <li>Available 24/7</li>
+              <li className="flex items-center gap-2">
+                <Mail className="h-4 w-4 shrink-0" />
+                
+                  href="mailto:noveltyscholars@gmail.com"
+                  className="hover:text-white transition-colors"
+                >
+                  noveltyscholars@gmail.com
+                </a>
+              </li>
+              <li className="flex items-center gap-2">
+                <Phone className="h-4 w-4 shrink-0" />
+                
+                  href="tel:+12095600466"
+                  className="hover:text-white transition-colors"
+                >
+                  +1 (209) 560-0466
+                </a>
+              </li>
+              <li className="text-green-400 font-medium">Available 24/7</li>
             </ul>
           </div>
         </div>
@@ -88,12 +131,15 @@ export function Footer() {
         {/* Disclaimer */}
         <div className="mt-10 pt-8 border-t border-gray-800">
           <p className="text-sm text-gray-500 text-center">
-            <strong>Disclaimer:</strong> We provide model papers for reference purpose only. All
-            work is intended to be used as research and reference material to assist students in
-            their academic pursuits. We do not support or condone plagiarism.
+            <strong>Disclaimer:</strong> We provide model papers for reference
+            purpose only. All work is intended to be used as research and
+            reference material to assist students in their academic pursuits. We
+            do not support or condone plagiarism. The company reserves no right
+            to research papers purchased by our customers.
           </p>
           <p className="text-sm text-gray-600 text-center mt-4">
-            &copy; {new Date().getFullYear()} NoveltyScholars. All rights reserved.
+            &copy; {new Date().getFullYear()} NoveltyScholars. All rights
+            reserved.
           </p>
         </div>
       </div>
