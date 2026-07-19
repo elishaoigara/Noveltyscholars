@@ -94,7 +94,7 @@ export function Header() {
               {link.label}
             </Link>
           ))}
-          
+          <a
             href="tel:+12095600466"
             className="flex items-center gap-1 text-sm font-semibold text-primary border border-primary rounded-full px-3 py-1 hover:bg-primary hover:text-white transition-colors whitespace-nowrap"
           >
@@ -157,7 +157,7 @@ export function Header() {
               {link.label}
             </Link>
           ))}
-          
+          <a
             href="tel:+12095600466"
             className="flex items-center gap-2 text-sm font-semibold text-primary py-2.5"
           >

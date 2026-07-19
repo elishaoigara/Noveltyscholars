@@ -83,7 +83,7 @@ export function Footer() {
           <ul className="space-y-3 text-sm text-slate-400">
             <li className="flex items-start gap-2">
               <Mail className="h-4 w-4 shrink-0 mt-0.5" />
-              
+              <a
                 href="mailto:noveltyscholars@gmail.com"
                 className="hover:text-primary transition-colors break-all"
               >
@@ -92,7 +92,7 @@ export function Footer() {
             </li>
             <li className="flex items-center gap-2">
               <Phone className="h-4 w-4 shrink-0" />
-              
+              <a
                 href="tel:+12095600466"
                 className="hover:text-primary transition-colors"
               >
