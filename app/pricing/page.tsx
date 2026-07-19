@@ -1,22 +1,9 @@
 import { Calculator, Zap, BookOpen, GraduationCap } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
 import { PricingCalculator } from "@/components/PricingCalculator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import type { Service } from "@/lib/types";
 
 export default async function PricingPage() {
-  const supabase = await createClient();
-  const { data: services } = await supabase
-    .from("services")
-    .select("*")
-    .order("created_at", { ascending: true });
-
-  const servicesData: Service[] = (services || []).map((s) => ({
-    ...s,
-    features: Array.isArray(s.features) ? s.features : [],
-  }));
-
   return (
     <div className="container mx-auto px-4 py-16 max-w-5xl">
       <div className="text-center mb-12">
@@ -29,7 +16,7 @@ export default async function PricingPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
         {/* Calculator */}
-        <PricingCalculator services={servicesData} />
+        <PricingCalculator basePrice={15} showPromoCode />
 
         {/* Pricing Factors */}
         <div className="space-y-6">
