@@ -1,11 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { Calculator } from "lucide-react";
-import { calculatePrice, formatCurrency } from "@/lib/utils";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+import { useState } from "react";
+import { Slider } from "@/components/ui/slider";
 import {
   Select,
   SelectContent,
@@ -13,154 +9,169 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
-import type { Service } from "@/lib/types";
+import { Label } from "@/components/ui/label";
+import PromoCodeInput from "@/components/PromoCodeInput";
+import { calculatePrice, formatCurrency } from "@/lib/utils";
 
 interface PricingCalculatorProps {
-  services: Service[];
-  onPriceChange?: (price: number) => void;
-  defaultServiceId?: string;
-  defaultPages?: number;
-  defaultLevel?: string;
+  basePrice: number;
+  onPriceChange?: (price: number, discountInfo?: { code: string; discountAmount: number; finalPrice: number }) => void;
+  showPromoCode?: boolean;
 }
 
 export function PricingCalculator({
-  services,
+  basePrice,
   onPriceChange,
-  defaultServiceId,
-  defaultPages = 1,
-  defaultLevel = "High School",
+  showPromoCode = false,
 }: PricingCalculatorProps) {
-  const [serviceId, setServiceId] = useState<string>(defaultServiceId || "");
-  const [pages, setPages] = useState(defaultPages);
-  const [deadline, setDeadline] = useState<string>(() => {
-    const d = new Date();
-    d.setDate(d.getDate() + 7);
-    return d.toISOString().split("T")[0];
-  });
-  const [level, setLevel] = useState(defaultLevel);
-  const [price, setPrice] = useState(0);
+  const [pages, setPages] = useState([1]);
+  const [level, setLevel] = useState("High School");
+  const [deadlineDays, setDeadlineDays] = useState("7");
+  const [discountCode, setDiscountCode] = useState<string | null>(null);
+  const [discountAmount, setDiscountAmount] = useState(0);
 
-  const selectedService = services.find((s) => s.id === serviceId);
+  const deadline = new Date();
+  deadline.setDate(deadline.getDate() + parseInt(deadlineDays));
+  const rawPrice = calculatePrice(basePrice, pages[0], deadline, level);
+  const finalPrice = Math.max(0, rawPrice - discountAmount);
 
-  const calcPrice = useCallback(() => {
-    if (!selectedService || !deadline) {
-      setPrice(0);
-      return;
+  const notifyPriceChange = () => {
+    if (onPriceChange) {
+      onPriceChange(finalPrice, discountCode
+        ? { code: discountCode, discountAmount, finalPrice }
+        : undefined
+      );
     }
-    const p = calculatePrice(selectedService.base_price, pages, deadline, level);
-    setPrice(p);
-    onPriceChange?.(p);
-  }, [selectedService, pages, deadline, level, onPriceChange]);
+  };
 
-  useEffect(() => {
-    calcPrice();
-  }, [calcPrice]);
+  const handlePagesChange = (val: number[]) => {
+    setPages(val);
+    setTimeout(notifyPriceChange, 0);
+  };
 
-  // Set tomorrow as minimum date
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const minDate = tomorrow.toISOString().split("T")[0];
+  const handleLevelChange = (val: string) => {
+    setLevel(val);
+    setTimeout(notifyPriceChange, 0);
+  };
 
-  // Max date 60 days from now
-  const maxDate = new Date();
-  maxDate.setDate(maxDate.getDate() + 60);
-  const maxDateStr = maxDate.toISOString().split("T")[0];
+  const handleDeadlineChange = (val: string) => {
+    setDeadlineDays(val);
+    setTimeout(notifyPriceChange, 0);
+  };
+
+  const handlePromoApplied = (amount: number, final: number, code: string) => {
+    setDiscountAmount(amount);
+    setDiscountCode(code);
+    if (onPriceChange) {
+      onPriceChange(final, { code, discountAmount: amount, finalPrice: final });
+    }
+  };
+
+  const handlePromoRemoved = () => {
+    setDiscountAmount(0);
+    setDiscountCode(null);
+    if (onPriceChange) {
+      onPriceChange(rawPrice);
+    }
+  };
 
   return (
-    <Card className="w-full max-w-md mx-auto card-hover">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-lg">
-          <Calculator className="h-5 w-5 text-primary" />
-          Price Calculator
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-5">
-        {/* Service */}
-        <div className="space-y-2">
-          <Label>Service Type</Label>
-          <Select value={serviceId} onValueChange={setServiceId}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select a service" />
-            </SelectTrigger>
-            <SelectContent>
-              {services.map((service) => (
-                <SelectItem key={service.id} value={service.id}>
-                  {service.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+    <div className="bg-white border rounded-2xl p-6 shadow-sm space-y-5">
+      {/* Pages slider */}
+      <div className="space-y-2">
+        <div className="flex justify-between">
+          <Label>Pages</Label>
+          <span className="text-sm font-semibold text-blue-600">{pages[0]} page(s)</span>
         </div>
+        <Slider
+          min={1}
+          max={50}
+          step={1}
+          value={pages}
+          onValueChange={handlePagesChange}
+          className="w-full"
+        />
+        <p className="text-xs text-gray-400">~{pages[0] * 275} words</p>
+      </div>
 
-        {/* Academic Level */}
-        <div className="space-y-2">
-          <Label>Academic Level</Label>
-          <Select value={level} onValueChange={setLevel}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select level" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="High School">High School</SelectItem>
-              <SelectItem value="Bachelors">Bachelors</SelectItem>
-              <SelectItem value="Masters">Masters</SelectItem>
-              <SelectItem value="PhD">PhD</SelectItem>
-            </SelectContent>
-          </Select>
+      {/* Academic level */}
+      <div className="space-y-2">
+        <Label>Academic Level</Label>
+        <Select value={level} onValueChange={handleLevelChange}>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="High School">High School</SelectItem>
+            <SelectItem value="Bachelors">Bachelors</SelectItem>
+            <SelectItem value="Masters">Masters</SelectItem>
+            <SelectItem value="PhD">PhD</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Deadline */}
+      <div className="space-y-2">
+        <Label>Deadline</Label>
+        <Select value={deadlineDays} onValueChange={handleDeadlineChange}>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="14">14 days</SelectItem>
+            <SelectItem value="7">7 days</SelectItem>
+            <SelectItem value="5">5 days</SelectItem>
+            <SelectItem value="3">3 days</SelectItem>
+            <SelectItem value="2">2 days</SelectItem>
+            <SelectItem value="1">24 hours</SelectItem>
+            <SelectItem value="0.5">12 hours</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Promo Code */}
+      {showPromoCode && (
+        <PromoCodeInput
+          orderTotal={rawPrice}
+          onApplied={handlePromoApplied}
+          onRemoved={handlePromoRemoved}
+          appliedCode={discountCode}
+          discountAmount={discountAmount}
+        />
+      )}
+
+      {/* Price display */}
+      <div className="border-t pt-4 space-y-2">
+        <div className="flex justify-between text-sm text-gray-500">
+          <span>Price per page</span>
+          <span>{formatCurrency(basePrice)}</span>
         </div>
-
-        {/* Pages */}
-        <div className="space-y-2">
-          <div className="flex justify-between items-center">
-            <Label>Pages: {pages}</Label>
-            <span className="text-sm text-muted-foreground">
-              ~{pages * 250} words
+        <div className="flex justify-between text-sm text-gray-500">
+          <span>Pages</span>
+          <span>× {pages[0]}</span>
+        </div>
+        {discountAmount > 0 && discountCode && (
+          <div className="flex justify-between text-sm text-green-600">
+            <span>Discount ({discountCode})</span>
+            <span>-{formatCurrency(discountAmount)}</span>
+          </div>
+        )}
+        <div className="flex justify-between items-baseline pt-1 border-t">
+          <span className="text-lg font-bold text-gray-900">Total</span>
+          <div className="text-right">
+            {discountAmount > 0 && (
+              <span className="text-sm text-gray-400 line-through mr-2">
+                {formatCurrency(rawPrice)}
+              </span>
+            )}
+            <span className="text-2xl font-bold text-blue-600">
+              {formatCurrency(finalPrice)}
             </span>
           </div>
-          <Slider
-            value={[pages]}
-            onValueChange={([v]) => setPages(v)}
-            min={1}
-            max={50}
-            step={1}
-          />
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <span>1 page</span>
-            <span>50 pages</span>
-          </div>
         </div>
-
-        {/* Deadline */}
-        <div className="space-y-2">
-          <Label>Deadline</Label>
-          <Input
-            type="date"
-            value={deadline}
-            onChange={(e) => setDeadline(e.target.value)}
-            min={minDate}
-            max={maxDateStr}
-          />
-          <p className="text-xs text-muted-foreground">
-            Earlier deadlines may increase the price due to urgency.
-          </p>
-        </div>
-
-        {/* Price Display */}
-        <div className="pt-4 border-t">
-          <div className="flex justify-between items-center">
-            <span className="text-lg font-semibold">Estimated Price:</span>
-            <span className="text-2xl font-bold text-primary">
-              {price > 0 ? formatCurrency(price) : "--"}
-            </span>
-          </div>
-          {selectedService && (
-            <p className="text-xs text-muted-foreground mt-1">
-              Base: {formatCurrency(selectedService.base_price)}/page &times; {pages} pages
-              {level !== "High School" && ` (${level})`}
-            </p>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
+
+export default PricingCalculator;
