@@ -90,7 +90,7 @@ export default async function AdminDashboardPage() {
             <CardTitle className="text-sm font-medium text-muted-foreground">
               In Progress
             </CardTitle>
-            <Loader2 className="h-4 w-4 text-blue-500" />
+            <Loader2 className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold">{inProgressOrders || 0}</p>

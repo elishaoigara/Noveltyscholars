@@ -286,12 +286,12 @@ function OrderPageContent() {
                   ? "bg-primary text-white"
                   : s === step
                   ? "bg-primary/10 text-primary border-2 border-primary"
-                  : "bg-gray-100 text-gray-400"
+                  : "surface-sunken text-muted-foreground"
               }`}
             >
               {s < step ? <Check className="h-5 w-5" /> : s}
             </div>
-            {s < 3 && <div className="w-12 h-0.5 bg-gray-200 mx-2" />}
+            {s < 3 && <div className="w-8 sm:w-12 h-0.5 bg-border mx-1 sm:mx-2" />}
           </div>
         ))}
       </div>
@@ -645,7 +645,7 @@ function OrderPageContent() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="bg-gray-50 rounded-xl p-5 space-y-3">
+              <div className="surface-sunken rounded-xl p-4 sm:p-5 space-y-3">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Service</span>
                   <span className="font-medium">{selectedService?.name || "--"}</span>

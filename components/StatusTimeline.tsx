@@ -25,7 +25,6 @@ interface StatusTimelineProps {
 }
 
 export function StatusTimeline({ currentStatus }: StatusTimelineProps) {
-  // Handle REVISION as a special case - show as DELIVERED but with note
   const effectiveStatus: OrderStatus =
     currentStatus === "REVISION" ? "DELIVERED" : currentStatus;
 
@@ -33,64 +32,67 @@ export function StatusTimeline({ currentStatus }: StatusTimelineProps) {
 
   return (
     <div className="w-full">
-      <div className="flex items-start justify-between">
-        {steps.map((step, index) => {
-          const stepStatus = statusOrder.indexOf(step.status);
-          const isCompleted = stepStatus < currentIndex;
-          const isCurrent = stepStatus === currentIndex;
-          const isFuture = stepStatus > currentIndex;
+      {/* Horizontal scroll wrapper keeps 5 steps usable on narrow phones */}
+      <div className="overflow-x-auto pb-1 -mx-1 px-1">
+        <div className="flex items-start justify-between min-w-[420px] sm:min-w-0">
+          {steps.map((step, index) => {
+            const stepStatus = statusOrder.indexOf(step.status);
+            const isCompleted = stepStatus < currentIndex;
+            const isCurrent = stepStatus === currentIndex;
+            const isFuture = stepStatus > currentIndex;
 
-          return (
-            <div key={step.status} className="flex flex-col items-center flex-1 relative">
-              {/* Connector line */}
-              {index < steps.length - 1 && (
-                <div className="absolute top-5 left-1/2 w-full h-0.5 -z-0">
-                  <div
-                    className={cn(
-                      "h-full transition-colors duration-500",
-                      isCompleted ? "bg-primary" : "bg-gray-200"
-                    )}
-                  />
+            return (
+              <div key={step.status} className="flex flex-col items-center flex-1 relative px-1">
+                {/* Connector line */}
+                {index < steps.length - 1 && (
+                  <div className="absolute top-5 left-1/2 w-full h-0.5 -z-0">
+                    <div
+                      className={cn(
+                        "h-full transition-colors duration-500",
+                        isCompleted ? "bg-primary" : "bg-border"
+                      )}
+                    />
+                  </div>
+                )}
+
+                {/* Circle */}
+                <div
+                  className={cn(
+                    "relative z-10 flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 transition-all duration-300 shrink-0",
+                    isCompleted && "bg-primary border-primary text-white",
+                    isCurrent && "bg-primary/10 border-primary text-primary",
+                    isFuture && "surface-raised border-border text-muted-foreground"
+                  )}
+                >
+                  {isCompleted ? (
+                    <Check className="h-4 w-4 sm:h-5 sm:w-5" />
+                  ) : isCurrent && step.status === "IN_PROGRESS" ? (
+                    <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
+                  ) : (
+                    step.icon
+                  )}
                 </div>
-              )}
 
-              {/* Circle */}
-              <div
-                className={cn(
-                  "relative z-10 flex items-center justify-center w-10 h-10 rounded-full border-2 transition-all duration-300",
-                  isCompleted && "bg-primary border-primary text-white",
-                  isCurrent && "bg-primary/10 border-primary text-primary",
-                  isFuture && "bg-white border-gray-300 text-gray-400"
-                )}
-              >
-                {isCompleted ? (
-                  <Check className="h-5 w-5" />
-                ) : isCurrent && step.status === "IN_PROGRESS" ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  step.icon
-                )}
+                {/* Label */}
+                <span
+                  className={cn(
+                    "mt-2 text-[11px] sm:text-xs text-center font-medium transition-colors leading-tight",
+                    isCompleted && "text-primary",
+                    isCurrent && "text-primary font-semibold",
+                    isFuture && "text-muted-foreground"
+                  )}
+                >
+                  {step.label}
+                </span>
               </div>
-
-              {/* Label */}
-              <span
-                className={cn(
-                  "mt-2 text-xs text-center font-medium transition-colors",
-                  isCompleted && "text-primary",
-                  isCurrent && "text-primary font-semibold",
-                  isFuture && "text-gray-400"
-                )}
-              >
-                {step.label}
-              </span>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
 
       {currentStatus === "REVISION" && (
         <div className="mt-3 text-center">
-          <span className="inline-flex items-center gap-1 text-xs font-medium text-yellow-600 bg-yellow-50 px-3 py-1 rounded-full">
+          <span className="inline-flex items-center gap-1 text-xs font-medium text-yellow-700 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-950/40 px-3 py-1 rounded-full">
             <FileText className="h-3 w-3" />
             Revision Requested
           </span>

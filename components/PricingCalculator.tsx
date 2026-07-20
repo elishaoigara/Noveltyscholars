@@ -76,12 +76,12 @@ export function PricingCalculator({
   };
 
   return (
-    <div className="bg-white border rounded-2xl p-6 shadow-sm space-y-5">
+    <div className="surface-raised border border-border rounded-2xl p-4 sm:p-6 shadow-sm space-y-5 w-full max-w-md mx-auto">
       {/* Pages slider */}
       <div className="space-y-2">
-        <div className="flex justify-between">
-          <Label>Pages</Label>
-          <span className="text-sm font-semibold text-blue-600">{pages[0]} page(s)</span>
+        <div className="flex justify-between items-center">
+          <Label className="text-heading">Pages</Label>
+          <span className="text-sm font-semibold text-primary">{pages[0]} page(s)</span>
         </div>
         <Slider
           min={1}
@@ -91,12 +91,12 @@ export function PricingCalculator({
           onValueChange={handlePagesChange}
           className="w-full"
         />
-        <p className="text-xs text-gray-400">~{pages[0] * 275} words</p>
+        <p className="text-xs text-body-muted">~{pages[0] * 275} words</p>
       </div>
 
       {/* Academic level */}
       <div className="space-y-2">
-        <Label>Academic Level</Label>
+        <Label className="text-heading">Academic Level</Label>
         <Select value={level} onValueChange={handleLevelChange}>
           <SelectTrigger>
             <SelectValue />
@@ -112,7 +112,7 @@ export function PricingCalculator({
 
       {/* Deadline */}
       <div className="space-y-2">
-        <Label>Deadline</Label>
+        <Label className="text-heading">Deadline</Label>
         <Select value={deadlineDays} onValueChange={handleDeadlineChange}>
           <SelectTrigger>
             <SelectValue />
@@ -141,30 +141,30 @@ export function PricingCalculator({
       )}
 
       {/* Price display */}
-      <div className="border-t pt-4 space-y-2">
-        <div className="flex justify-between text-sm text-gray-500">
+      <div className="border-t border-border pt-4 space-y-2">
+        <div className="flex justify-between text-sm text-body-muted">
           <span>Price per page</span>
           <span>{formatCurrency(basePrice)}</span>
         </div>
-        <div className="flex justify-between text-sm text-gray-500">
+        <div className="flex justify-between text-sm text-body-muted">
           <span>Pages</span>
-          <span>× {pages[0]}</span>
+          <span>&times; {pages[0]}</span>
         </div>
         {discountAmount > 0 && discountCode && (
-          <div className="flex justify-between text-sm text-green-600">
+          <div className="flex justify-between text-sm text-green-600 dark:text-green-400">
             <span>Discount ({discountCode})</span>
             <span>-{formatCurrency(discountAmount)}</span>
           </div>
         )}
-        <div className="flex justify-between items-baseline pt-1 border-t">
-          <span className="text-lg font-bold text-gray-900">Total</span>
+        <div className="flex flex-wrap justify-between items-baseline gap-2 pt-1 border-t border-border">
+          <span className="text-lg font-bold text-heading">Total</span>
           <div className="text-right">
             {discountAmount > 0 && (
-              <span className="text-sm text-gray-400 line-through mr-2">
+              <span className="text-sm text-body-muted line-through mr-2">
                 {formatCurrency(rawPrice)}
               </span>
             )}
-            <span className="text-2xl font-bold text-blue-600">
+            <span className="text-2xl font-bold text-primary">
               {formatCurrency(finalPrice)}
             </span>
           </div>

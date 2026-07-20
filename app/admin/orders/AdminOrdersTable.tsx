@@ -108,7 +108,7 @@ export function AdminOrdersTable({ orders }: AdminOrdersTableProps) {
           />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent>
@@ -124,11 +124,11 @@ export function AdminOrdersTable({ orders }: AdminOrdersTableProps) {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl border overflow-hidden">
+      <div className="surface-raised rounded-xl border border-border overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b bg-gray-50 text-sm text-muted-foreground">
+              <tr className="border-b border-border surface-sunken text-sm text-muted-foreground">
                 <th className="text-left py-3 px-4 font-medium">Order Code</th>
                 <th className="text-left py-3 px-4 font-medium">Customer</th>
                 <th className="text-left py-3 px-4 font-medium hidden md:table-cell">
@@ -151,7 +151,7 @@ export function AdminOrdersTable({ orders }: AdminOrdersTableProps) {
                 </tr>
               ) : (
                 filtered.map((order) => (
-                  <tr key={order.id} className="border-b last:border-0 text-sm hover:bg-gray-50">
+                  <tr key={order.id} className="border-b border-border last:border-0 text-sm hover:bg-primary/5">
                     <td className="py-3 px-4 font-mono text-xs">{order.order_code}</td>
                     <td className="py-3 px-4">
                       <p className="font-medium">{order.profiles?.full_name || "N/A"}</p>

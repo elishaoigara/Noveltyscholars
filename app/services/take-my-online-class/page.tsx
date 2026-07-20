@@ -1,142 +1,111 @@
 import Link from "next/link";
-import {
-  ArrowRight,
-  BookOpen,
-  FileText,
-  GraduationCap,
-  Monitor,
-  Briefcase,
-  BookMarked,
-  PenTool,
-  FileCheck,
-} from "lucide-react";
+import { ArrowRight, CheckCircle, Award, Users, RefreshCw, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { createClient } from "@/lib/supabase/server";
-import { ServicesGrid } from "@/components/ServicesGrid";
-import type { Service } from "@/lib/types";
 
-const servicesList = [
-  {
-    icon: PenTool,
-    title: "Essays",
-    desc: "We provide essays to students at all grade levels on any subject. Each essay is completely original and written according to the student's specifications.",
-  },
-  {
-    icon: FileText,
-    title: "Research Papers",
-    desc: "Our highly qualified writers are ready to assist you with any research paper, regardless of difficulty or subject matter.",
-  },
-  {
-    icon: Briefcase,
-    title: "Resume and CV",
-    desc: "Our writing partners know what it takes to move up the career ladder. They can write or edit a resume or CV that helps get you to the top.",
-  },
-  {
-    icon: Monitor,
-    title: "Online Classes",
-    desc: "We hook you up immediately to a capable writer who shall be able to handle your classes effectively throughout the entire course.",
-  },
-  {
-    icon: BookMarked,
-    title: "Scholarship and Admission Essays",
-    desc: "Compelling written products that can get you into a prestigious institution and secure the funds you need to stay there.",
-  },
-  {
-    icon: GraduationCap,
-    title: "Thesis and Dissertation",
-    desc: "PhD consultants in all fields partner with graduate students to assist them with their capstone projects from start to finish.",
-  },
-  {
-    icon: FileCheck,
-    title: "Term Papers",
-    desc: "We can write a custom term paper that will impress your instructor with your mastery of the subject matter.",
-  },
-  {
-    icon: BookOpen,
-    title: "Copy Writing",
-    desc: "Whether you need web content, product descriptions, blog posts, reviews, or press releases, count on us for all your business writing needs.",
-  },
+const features = [
+  { icon: Award, title: '"A" Grade Promised', desc: "We take pride in maintaining a 100% on-time delivery rate. Throughout the process we will keep you posted about the order." },
+  { icon: Users, title: "American Writers", desc: "We have skilled writers — our strict interviewing process gives us the best writers in any niche." },
+  { icon: RefreshCw, title: "Free Revisions", desc: "At our writing service we offer revisions at no extra cost, just in case you feel you need some additional information or a rewrite." },
+  { icon: CheckCircle, title: "Zero to 1% Chance of Revisions", desc: "We have a very able team and writers who ensure your coursework follows all the instructions to the letter." },
+  { icon: Gift, title: "Freebies", desc: "Formatting, the cover page, and the bibliography page are given to you free of charge. You only pay for the content." },
+  { icon: Award, title: "Pay For Grades", desc: "Our service can help you with academic coursework through our highly qualified team of writers." },
 ];
 
-export default async function ServicesPage() {
-  const supabase = await createClient();
-  const { data: services } = await supabase
-    .from("services")
-    .select("*")
-    .order("created_at", { ascending: true });
-
-  const servicesData: Service[] = (services || []).map((s) => ({
-    ...s,
-    features: Array.isArray(s.features) ? s.features : [],
-  }));
-
+export default function TakeMyOnlineClassPage() {
   return (
-    <div className="container mx-auto px-4 py-16 max-w-6xl">
-      <div className="text-center mb-12">
-        <h1 className="text-3xl md:text-4xl font-bold mb-4">Our Services</h1>
-        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          Standing on guard for your academic liberty. We help you succeed by
-          making your academic work go away.
-        </p>
-      </div>
-
-      {/* Static Service Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-        {servicesList.map((s, i) => (
-          <div
-            key={i}
-            className="bg-white border rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow space-y-3"
-          >
-            <s.icon className="h-8 w-8 text-primary" />
-            <h3 className="font-bold text-lg">{s.title}</h3>
-            <p className="text-sm text-gray-600">{s.desc}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Dedicated Service CTAs */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
-        <div className="bg-primary rounded-2xl p-8 text-white space-y-4">
-          <h2 className="text-2xl font-bold">Take My Online Class</h2>
-          <p className="text-primary-foreground/80">
-            Can&apos;t manage work, play, and class at the same time? We hook
-            you up with a capable writer who handles your entire course.
-          </p>
-          <Link href="/services/take-my-online-class">
-            <Button
-              variant="secondary"
-              className="gap-2 bg-white text-primary hover:bg-gray-100"
-            >
-              Learn More <ArrowRight className="h-4 w-4" />
-            </Button>
-          </Link>
-        </div>
-        <div className="bg-gray-800 rounded-2xl p-8 text-white space-y-4">
-          <h2 className="text-2xl font-bold">Take My Online Exam</h2>
-          <p className="text-gray-300">
-            Our exam experts will log in and complete your online exam on your
-            behalf, giving you the grade you desire.
-          </p>
-          <Link href="/services/take-my-online-exam">
-            <Button
-              variant="outline"
-              className="gap-2 border-white text-white hover:bg-white hover:text-gray-800"
-            >
-              Learn More <ArrowRight className="h-4 w-4" />
-            </Button>
-          </Link>
-        </div>
-      </div>
-
-      {/* Dynamic Services from Database */}
-      {servicesData.length > 0 && (
-        <div>
-          <h2 className="text-2xl font-bold mb-6 text-center">
-            Order a Service Now
+    <div>
+      {/* Hero */}
+      <section className="bg-slate-800 dark:bg-slate-900 text-white py-16 sm:py-20">
+        <div className="container mx-auto px-4 sm:px-6 text-center max-w-3xl">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6">Take My Online Class</h1>
+          <h2 className="text-xl sm:text-2xl font-semibold mb-6 text-slate-300">
+            I Am In Dilemma With Who To Take My Online Classes
           </h2>
-          <ServicesGrid services={servicesData} />
+          <p className="text-slate-300 mb-8 text-base sm:text-lg">
+            You are not alone in this. We have several students who come to us with the same predicament but we still manage to put a smile on their faces with our quality writing services.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/order?service_type=ONLINE_CLASS">
+              <Button size="lg" className="gap-2 bg-green-500 hover:bg-green-600 text-white border-0 w-full sm:w-auto">
+                Take My Class <ArrowRight className="h-5 w-5" />
+              </Button>
+            </Link>
+            <a
+              href="https://api.whatsapp.com/send?phone=12095600466&text=Take%20my%20online%20class"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Button size="lg" variant="outline" className="gap-2 border-white text-white hover:bg-white hover:text-slate-800 w-full sm:w-auto">
+                Inquire More
+              </Button>
+            </a>
+          </div>
         </div>
-      )}
+      </section>
+
+      {/* Intro strip */}
+      <section className="py-14 sm:py-16 bg-primary/5">
+        <div className="container mx-auto px-4 sm:px-6 text-center max-w-2xl">
+          <h2 className="text-xl sm:text-2xl font-bold mb-3 text-heading">100&apos;s of Writers to Cater to Your Class</h2>
+          <p className="text-body">
+            We shall handle your entire online class, from start to finish, giving you the grade you so desire.
+          </p>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section className="py-16 sm:py-20">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="text-center mb-10 sm:mb-12">
+            <h2 className="text-2xl sm:text-3xl font-bold mb-4">Don&apos;t Have Time? We Can Help.</h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-5xl mx-auto">
+            {features.map((f, i) => (
+              <div key={i} className="surface-raised border border-border rounded-2xl p-5 sm:p-6 shadow-sm hover:shadow-md transition-shadow space-y-3">
+                <f.icon className="h-8 w-8 text-primary" />
+                <h3 className="font-bold text-lg text-heading">{f.title}</h3>
+                <p className="text-sm text-body">{f.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Why Choose Us */}
+      <section className="py-16 sm:py-20 surface-sunken">
+        <div className="container mx-auto px-4 sm:px-6 max-w-3xl">
+          <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center">Why Use Our Online Class Service?</h2>
+          <p className="text-body mb-4">
+            At NoveltyScholars, the &ldquo;Take My Online Class&rdquo; service is among the most vibrant departments with numerous reviews and overwhelming referrals. Our clients come back to us time and again because we deliver results.
+          </p>
+          <p className="text-body mb-8">
+            Whether it&apos;s weekly discussions, quizzes, assignments, or final exams — our writers handle every component of your online course so you can focus on what matters most.
+          </p>
+          <div className="text-center">
+            <Link href="/order?service_type=ONLINE_CLASS">
+              <Button size="lg" className="gap-2 w-full sm:w-auto">
+                Get Started Today <ArrowRight className="h-5 w-5" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Contact CTA */}
+      <section className="py-14 sm:py-16 bg-primary text-white">
+        <div className="container mx-auto px-4 sm:px-6 text-center">
+          <h2 className="text-xl sm:text-2xl font-bold mb-4">Ready to Get Your Class Handled?</h2>
+          <p className="mb-6 text-white/80">Contact us now and we&apos;ll assign a writer immediately.</p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="tel:+12095600466">
+              <Button variant="secondary" className="bg-white text-primary hover:bg-gray-100 w-full sm:w-auto">+1 (209) 560-0466</Button>
+            </a>
+            <a href="mailto:noveltyscholars@gmail.com">
+              <Button variant="outline" className="border-white text-white hover:bg-white/10 w-full sm:w-auto">noveltyscholars@gmail.com</Button>
+            </a>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

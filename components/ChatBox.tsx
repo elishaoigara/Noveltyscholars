@@ -25,7 +25,6 @@ export function ChatBox({ orderId, userId, profileName = "User" }: ChatBoxProps)
   const scrollRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
 
-  // Fetch messages
   const fetchMessages = useCallback(async () => {
     const { data, error } = await supabase
       .from("messages")
@@ -42,7 +41,6 @@ export function ChatBox({ orderId, userId, profileName = "User" }: ChatBoxProps)
   useEffect(() => {
     fetchMessages();
 
-    // Subscribe to realtime inserts
     const channel = supabase
       .channel(`messages-${orderId}`)
       .on(
@@ -57,7 +55,6 @@ export function ChatBox({ orderId, userId, profileName = "User" }: ChatBoxProps)
           const newMsg = payload.new as Message & {
             profiles?: { full_name: string } | null;
           };
-          // Fetch the profile name for the new message
           supabase
             .from("profiles")
             .select("full_name")
@@ -78,7 +75,6 @@ export function ChatBox({ orderId, userId, profileName = "User" }: ChatBoxProps)
     };
   }, [orderId, fetchMessages, supabase]);
 
-  // Auto-scroll
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -113,23 +109,23 @@ export function ChatBox({ orderId, userId, profileName = "User" }: ChatBoxProps)
   };
 
   return (
-    <div className="flex flex-col h-[500px] border rounded-2xl overflow-hidden bg-white">
+    <div className="flex flex-col h-[70vh] sm:h-[500px] max-h-[500px] border border-border rounded-2xl overflow-hidden surface-raised">
       {/* Header */}
-      <div className="px-4 py-3 border-b bg-gray-50">
-        <h3 className="font-semibold text-sm">Order Chat</h3>
+      <div className="px-4 py-3 border-b border-border surface-sunken shrink-0">
+        <h3 className="font-semibold text-sm text-heading">Order Chat</h3>
         <p className="text-xs text-muted-foreground">
           Communicate with your writer here
         </p>
       </div>
 
       {/* Messages */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3">
         {loading ? (
           <div className="flex items-center justify-center h-full">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
         ) : messages.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
+          <div className="flex items-center justify-center h-full text-sm text-muted-foreground text-center px-4">
             No messages yet. Start the conversation!
           </div>
         ) : (
@@ -141,7 +137,7 @@ export function ChatBox({ orderId, userId, profileName = "User" }: ChatBoxProps)
                 className={cn("flex gap-2", isMine ? "justify-end" : "justify-start")}
               >
                 {!isMine && (
-                  <Avatar className="h-8 w-8">
+                  <Avatar className="h-8 w-8 shrink-0">
                     <AvatarFallback className="text-xs bg-primary/10 text-primary">
                       {getInitials(msg.profiles?.full_name || "User")}
                     </AvatarFallback>
@@ -149,10 +145,10 @@ export function ChatBox({ orderId, userId, profileName = "User" }: ChatBoxProps)
                 )}
                 <div
                   className={cn(
-                    "max-w-[75%] rounded-2xl px-4 py-2 text-sm",
+                    "max-w-[80%] sm:max-w-[75%] rounded-2xl px-3 sm:px-4 py-2 text-sm break-words",
                     isMine
                       ? "bg-primary text-primary-foreground rounded-br-md"
-                      : "bg-gray-100 text-gray-900 rounded-bl-md"
+                      : "bg-muted text-foreground rounded-bl-md"
                   )}
                 >
                   {!isMine && (
@@ -164,7 +160,7 @@ export function ChatBox({ orderId, userId, profileName = "User" }: ChatBoxProps)
                   <p
                     className={cn(
                       "text-[10px] mt-1",
-                      isMine ? "text-primary-foreground/70" : "text-gray-500"
+                      isMine ? "text-primary-foreground/70" : "text-muted-foreground"
                     )}
                   >
                     {new Date(msg.created_at).toLocaleTimeString([], {
@@ -174,7 +170,7 @@ export function ChatBox({ orderId, userId, profileName = "User" }: ChatBoxProps)
                   </p>
                 </div>
                 {isMine && (
-                  <Avatar className="h-8 w-8">
+                  <Avatar className="h-8 w-8 shrink-0">
                     <AvatarFallback className="text-xs bg-primary text-primary-foreground">
                       {getInitials(profileName)}
                     </AvatarFallback>
@@ -187,15 +183,15 @@ export function ChatBox({ orderId, userId, profileName = "User" }: ChatBoxProps)
       </div>
 
       {/* Input */}
-      <form onSubmit={handleSend} className="flex items-center gap-2 p-3 border-t bg-gray-50">
+      <form onSubmit={handleSend} className="flex items-center gap-2 p-2.5 sm:p-3 border-t border-border surface-sunken shrink-0">
         <Input
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
           placeholder="Type your message..."
-          className="flex-1 bg-white"
+          className="flex-1 surface-raised"
           disabled={sending}
         />
-        <Button type="submit" size="icon" disabled={sending || !newMessage.trim()}>
+        <Button type="submit" size="icon" disabled={sending || !newMessage.trim()} className="shrink-0">
           {sending ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (

@@ -2,13 +2,14 @@ import { Calculator, Zap, BookOpen, GraduationCap } from "lucide-react";
 import { PricingCalculator } from "@/components/PricingCalculator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 
 export default async function PricingPage() {
   return (
-    <div className="container mx-auto px-4 py-16 max-w-5xl">
-      <div className="text-center mb-12">
+    <div className="container mx-auto px-4 sm:px-6 py-12 sm:py-16 max-w-5xl">
+      <div className="text-center mb-10 sm:mb-12">
         <h1 className="text-3xl md:text-4xl font-bold mb-4">Pricing</h1>
-        <p className="text-lg text-gray-600 max-w-xl mx-auto">
+        <p className="text-base sm:text-lg text-body max-w-xl mx-auto">
           Transparent pricing based on your requirements. Use the calculator
           below to get an instant estimate. For Online Class and Exam services,
           pricing is quoted per order based on scope — contact us for a custom
@@ -16,13 +17,13 @@ export default async function PricingPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-start">
         {/* Calculator */}
         <PricingCalculator basePrice={15} showPromoCode />
 
         {/* Pricing Factors */}
         <div className="space-y-6">
-          <h2 className="text-xl font-semibold">How Pricing Works</h2>
+          <h2 className="text-xl font-semibold text-heading">How Pricing Works</h2>
 
           <Card>
             <CardHeader className="pb-2">
@@ -118,21 +119,21 @@ export default async function PricingPage() {
       </div>
 
       {/* Custom Quote CTA */}
-      <div className="mt-12 bg-primary/5 border border-primary/20 rounded-2xl p-8 text-center">
-        <h3 className="text-xl font-bold mb-2">Need a Custom Quote?</h3>
-        <p className="text-gray-600 mb-4">
+      <div className="mt-10 sm:mt-12 bg-primary/5 border border-primary/20 rounded-2xl p-6 sm:p-8 text-center">
+        <h3 className="text-xl font-bold mb-2 text-heading">Need a Custom Quote?</h3>
+        <p className="text-body mb-4">
           For online classes, exams, or bulk orders, contact us directly.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <a href="mailto:noveltyscholars@gmail.com">
-            <button className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground">
+          <a href="mailto:noveltyscholars@gmail.com" className="w-full sm:w-auto">
+            <Button variant="outline" className="w-full sm:w-auto">
               noveltyscholars@gmail.com
-            </button>
+            </Button>
           </a>
-          <a href="tel:+12095600466">
-            <button className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
+          <a href="tel:+12095600466" className="w-full sm:w-auto">
+            <Button className="w-full sm:w-auto">
               +1 (209) 560-0466
-            </button>
+            </Button>
           </a>
         </div>
       </div>

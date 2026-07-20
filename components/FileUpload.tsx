@@ -52,18 +52,17 @@ export function FileUpload({
       throw error;
     }
 
-    // Get the URL
     const {
       data: { publicUrl },
     } = supabase.storage.from("order-files").getPublicUrl(data.path);
+    void publicUrl;
 
-    // Insert into order_files
     const { data: orderFile, error: dbError } = await supabase
       .from("order_files")
       .insert({
         order_id: orderId,
         file_name: file.name,
-        file_url: data.path, // store the path, not public URL
+        file_url: data.path,
         file_type: fileType,
         uploaded_by: (await supabase.auth.getUser()).data.user?.id || "",
       })
@@ -105,7 +104,8 @@ export function FileUpload({
         }
       }
     },
-    [orderId, fileType, onUploadComplete, supabase]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [orderId, fileType, onUploadComplete, files.length]
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -125,16 +125,16 @@ export function FileUpload({
       <div
         {...getRootProps()}
         className={cn(
-          "border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors",
+          "border-2 border-dashed rounded-xl p-4 sm:p-6 text-center cursor-pointer transition-colors",
           isDragActive
             ? "border-primary bg-primary/5"
-            : "border-gray-300 hover:border-primary/50 hover:bg-gray-50"
+            : "border-border hover:border-primary/50 hover:bg-primary/5"
         )}
       >
         <input {...getInputProps()} />
-        <Upload className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-        <p className="text-sm font-medium">
-          {isDragActive ? "Drop files here" : "Drag & drop files here, or click to select"}
+        <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
+        <p className="text-sm font-medium text-heading">
+          {isDragActive ? "Drop files here" : "Drag & drop files here, or tap to select"}
         </p>
         <p className="text-xs text-muted-foreground mt-1">
           PDF, DOCX, ZIP, PNG, JPG &bull; Max {Math.round(maxSize / (1024 * 1024))}MB each
@@ -147,7 +147,7 @@ export function FileUpload({
           {files.map((file, index) => (
             <div
               key={index}
-              className="flex items-center justify-between rounded-lg border p-3 text-sm"
+              className="flex items-center justify-between rounded-lg border border-border p-3 text-sm gap-2"
             >
               <div className="flex items-center gap-3 min-w-0">
                 {file.status === "uploading" ? (
@@ -158,7 +158,7 @@ export function FileUpload({
                   <FileText className="h-4 w-4 text-red-500 shrink-0" />
                 )}
                 <div className="min-w-0">
-                  <p className="font-medium truncate">{file.name}</p>
+                  <p className="font-medium truncate text-heading">{file.name}</p>
                   <p className="text-xs text-muted-foreground">
                     {(file.size / 1024).toFixed(1)} KB
                     {file.error && (
@@ -170,7 +170,7 @@ export function FileUpload({
               <Button
                 variant="ghost"
                 size="icon"
-                className="shrink-0 ml-2"
+                className="shrink-0"
                 onClick={(e) => {
                   e.stopPropagation();
                   removeFile(index);
@@ -188,7 +188,7 @@ export function FileUpload({
         <div className="space-y-1">
           <p className="text-xs font-medium text-muted-foreground">Uploaded files:</p>
           {uploadedFiles.map((f) => (
-            <p key={f.id} className="text-xs text-primary">
+            <p key={f.id} className="text-xs text-primary truncate">
               {f.file_name}
             </p>
           ))}

@@ -19,11 +19,11 @@ export function ServicesGrid({ services }: ServicesGridProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
       {services.map((service) => (
         <Card key={service.id} className="flex flex-col card-hover">
           <CardHeader>
-            <CardTitle className="text-xl">{service.name}</CardTitle>
+            <CardTitle className="text-lg sm:text-xl">{service.name}</CardTitle>
             <CardDescription className="line-clamp-2">{service.description}</CardDescription>
           </CardHeader>
           <CardContent className="flex-1">
@@ -34,7 +34,7 @@ export function ServicesGrid({ services }: ServicesGridProps) {
             {service.features && service.features.length > 0 && (
               <ul className="space-y-2">
                 {service.features.map((feature, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
+                  <li key={i} className="flex items-start gap-2 text-sm text-body">
                     <Check className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
                     <span>{feature}</span>
                   </li>
@@ -52,3 +52,5 @@ export function ServicesGrid({ services }: ServicesGridProps) {
     </div>
   );
 }
+
+export default ServicesGrid;
