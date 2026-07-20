@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, FileText, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, FileText, Settings, Tag, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { signOutAction } from "./actions";
@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/orders", label: "Orders", icon: FileText },
   { href: "/admin/services", label: "Services", icon: Settings },
+  { href: "/admin/promo-codes", label: "Promo Codes", icon: Tag },
 ];
 
 export function AdminSidebar({ fullName }: { fullName: string }) {

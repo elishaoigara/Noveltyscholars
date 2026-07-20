@@ -1,6 +1,8 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { FileUpload } from "@/components/FileUpload";
+import { useToast } from "@/hooks/use-toast";
 import type { OrderFile } from "@/lib/types";
 
 interface AdminFileUploadProps {
@@ -8,10 +10,18 @@ interface AdminFileUploadProps {
 }
 
 export function AdminFileUpload({ orderId }: AdminFileUploadProps) {
+  const router = useRouter();
+  const { toast } = useToast();
+
   const handleUploadComplete = (file: OrderFile) => {
-    // The FileUpload component handles the upload and DB insert.
-    // We just need to refresh to see the new file.
-    window.location.reload();
+    toast({
+      variant: "success",
+      title: "File uploaded",
+      description: `"${file.file_name}" was delivered to the customer.`,
+    });
+    // Light refresh of server data — no full page reload, no lost scroll
+    // position, far less data to re-fetch on a slow connection.
+    router.refresh();
   };
 
   return (

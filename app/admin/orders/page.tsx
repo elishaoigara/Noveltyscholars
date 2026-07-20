@@ -1,26 +1,12 @@
-import { redirect } from "next/navigation";
+import { requireAdmin } from "@/lib/admin-auth";
 import { createClient } from "@/lib/supabase/server";
-import { formatCurrency, formatDate } from "@/lib/utils";
 import { AdminOrdersTable } from "./AdminOrdersTable";
-import type { Order, OrderStatus, Profile } from "@/lib/types";
+import type { Order } from "@/lib/types";
 
 export default async function AdminOrdersPage() {
+  await requireAdmin();
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
-  if (!user) redirect("/login");
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single<Pick<Profile, "role">>();
-
-  if (!profile || profile.role !== "ADMIN") redirect("/dashboard");
-
-  // Fetch all orders with user email
   const { data: orders } = await supabase
     .from("orders")
     .select("*, services(name), profiles!orders_user_id_fkey(email, full_name)")

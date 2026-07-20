@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Search, Loader2 } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -23,6 +22,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
+import { updateOrderStatus } from "./status-actions";
 import type { Order, OrderStatus } from "@/lib/types";
 
 const statusVariant: Record<OrderStatus, "warning" | "default" | "secondary" | "success" | "destructive"> = {
@@ -43,6 +43,15 @@ const statusLabel: Record<OrderStatus, string> = {
   REVISION: "Revision",
 };
 
+const ALL_STATUSES: OrderStatus[] = [
+  "PENDING_PAYMENT",
+  "PAID",
+  "IN_PROGRESS",
+  "DELIVERED",
+  "COMPLETED",
+  "REVISION",
+];
+
 interface AdminOrdersTableProps {
   orders: (Order & {
     services?: { name: string } | null;
@@ -51,12 +60,29 @@ interface AdminOrdersTableProps {
 }
 
 export function AdminOrdersTable({ orders }: AdminOrdersTableProps) {
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [updatingId, setUpdatingId] = useState<string | null>(null);
   const router = useRouter();
-  const supabase = createClient();
+  const searchParams = useSearchParams();
+
+  const [search, setSearch] = useState("");
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
+
+  // Status filter lives in the URL (?status=PAID) so it's shareable/bookmarkable
+  // and survives a refresh.
+  const statusFilter = searchParams.get("status") || "all";
+
+  const setStatusFilter = (value: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (value === "all") {
+      params.delete("status");
+    } else {
+      params.set("status", value);
+    }
+    startTransition(() => {
+      router.push(`/admin/orders${params.toString() ? `?${params.toString()}` : ""}`);
+    });
+  };
 
   const filtered = orders.filter((order) => {
     const matchesSearch =
@@ -64,24 +90,20 @@ export function AdminOrdersTable({ orders }: AdminOrdersTableProps) {
       order.subject.toLowerCase().includes(search.toLowerCase()) ||
       (order.profiles?.email || "").toLowerCase().includes(search.toLowerCase());
 
-    const matchesStatus =
-      statusFilter === "all" || order.status === statusFilter;
+    const matchesStatus = statusFilter === "all" || order.status === statusFilter;
 
     return matchesSearch && matchesStatus;
   });
 
-  const handleStatusChange = async (orderId: string, newStatus: OrderStatus) => {
+  const handleStatusChange = async (orderId: string, currentStatus: OrderStatus, newStatus: OrderStatus) => {
     setUpdatingId(orderId);
-    const { error } = await supabase
-      .from("orders")
-      .update({ status: newStatus, updated_at: new Date().toISOString() })
-      .eq("id", orderId);
+    const result = await updateOrderStatus(orderId, newStatus, currentStatus);
 
-    if (error) {
+    if (!result.success) {
       toast({
         variant: "destructive",
         title: "Update failed",
-        description: error.message,
+        description: result.error,
       });
     } else {
       toast({
@@ -107,18 +129,21 @@ export function AdminOrdersTable({ orders }: AdminOrdersTableProps) {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
+        <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isPending}>
           <SelectTrigger className="w-full sm:w-[180px]">
-            <SelectValue placeholder="Filter by status" />
+            {isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <SelectValue placeholder="Filter by status" />
+            )}
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Statuses</SelectItem>
-            <SelectItem value="PENDING_PAYMENT">Payment Pending</SelectItem>
-            <SelectItem value="PAID">Paid</SelectItem>
-            <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
-            <SelectItem value="DELIVERED">Delivered</SelectItem>
-            <SelectItem value="COMPLETED">Completed</SelectItem>
-            <SelectItem value="REVISION">Revision</SelectItem>
+            {ALL_STATUSES.map((s) => (
+              <SelectItem key={s} value={s}>
+                {statusLabel[s]}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
@@ -185,19 +210,10 @@ export function AdminOrdersTable({ orders }: AdminOrdersTableProps) {
                           </button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="start">
-                          {(
-                            [
-                              "PENDING_PAYMENT",
-                              "PAID",
-                              "IN_PROGRESS",
-                              "DELIVERED",
-                              "COMPLETED",
-                              "REVISION",
-                            ] as OrderStatus[]
-                          ).map((status) => (
+                          {ALL_STATUSES.map((status) => (
                             <DropdownMenuItem
                               key={status}
-                              onClick={() => handleStatusChange(order.id, status)}
+                              onClick={() => handleStatusChange(order.id, order.status, status)}
                               disabled={order.status === status}
                             >
                               {statusLabel[status]}

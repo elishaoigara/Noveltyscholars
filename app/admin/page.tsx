@@ -1,27 +1,18 @@
-import { redirect } from "next/navigation";
-import { FileText, DollarSign, Clock, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { FileText, DollarSign, Clock, Loader2, TrendingUp } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/admin-auth";
 import { formatCurrency } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { Profile } from "@/lib/types";
 
 export default async function AdminDashboardPage() {
+  await requireAdmin();
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
-  if (!user) redirect("/login");
+  const startOfMonth = new Date();
+  startOfMonth.setDate(1);
+  startOfMonth.setHours(0, 0, 0, 0);
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single<Pick<Profile, "role">>();
-
-  if (!profile || profile.role !== "ADMIN") redirect("/dashboard");
-
-  // Fetch stats
   const { count: totalOrders } = await supabase
     .from("orders")
     .select("*", { count: "exact", head: true });
@@ -38,11 +29,16 @@ export default async function AdminDashboardPage() {
 
   const { data: revenueData } = await supabase
     .from("orders")
-    .select("total_price")
+    .select("total_price, created_at")
     .neq("status", "PENDING_PAYMENT");
 
   const totalRevenue =
     revenueData?.reduce((sum, o) => sum + (o.total_price || 0), 0) || 0;
+
+  const monthRevenue =
+    revenueData
+      ?.filter((o) => new Date(o.created_at) >= startOfMonth)
+      .reduce((sum, o) => sum + (o.total_price || 0), 0) || 0;
 
   return (
     <div className="space-y-8">
@@ -52,50 +48,62 @@ export default async function AdminDashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Link href="/admin/orders">
+          <Card className="card-hover cursor-pointer h-full">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Total Orders
+              </CardTitle>
+              <FileText className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold">{totalOrders || 0}</p>
+            </CardContent>
+          </Card>
+        </Link>
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Orders
+              Revenue (This Month)
             </CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
+            <TrendingUp className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold">{totalOrders || 0}</p>
+            <p className="text-3xl font-bold">{formatCurrency(monthRevenue)}</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {formatCurrency(totalRevenue)} lifetime
+            </p>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Revenue
-            </CardTitle>
-            <DollarSign className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{formatCurrency(totalRevenue)}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Pending Payment
-            </CardTitle>
-            <Clock className="h-4 w-4 text-yellow-500" />
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{pendingOrders || 0}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              In Progress
-            </CardTitle>
-            <Loader2 className="h-4 w-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{inProgressOrders || 0}</p>
-          </CardContent>
-        </Card>
+
+        <Link href="/admin/orders?status=PENDING_PAYMENT">
+          <Card className="card-hover cursor-pointer h-full">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Pending Payment
+              </CardTitle>
+              <Clock className="h-4 w-4 text-yellow-500" />
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold">{pendingOrders || 0}</p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href="/admin/orders">
+          <Card className="card-hover cursor-pointer h-full">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Active (Paid, In Progress, Revision)
+              </CardTitle>
+              <Loader2 className="h-4 w-4 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold">{inProgressOrders || 0}</p>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
     </div>
   );

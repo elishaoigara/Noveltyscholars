@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/admin-auth";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { StatusTimeline } from "@/components/StatusTimeline";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +10,7 @@ import { AdminStatusDropdown } from "./AdminStatusDropdown";
 import { AdminFileUpload } from "./AdminFileUpload";
 import { OrderChatWrapper } from "@/app/dashboard/orders/[id]/OrderChatWrapper";
 import { OrderFilesList } from "@/app/dashboard/orders/[id]/OrderFilesList";
-import type { Order, OrderFile, OrderStatus, Profile } from "@/lib/types";
+import type { Order, OrderFile, OrderStatus } from "@/lib/types";
 
 const statusLabel: Record<OrderStatus, string> = {
   PENDING_PAYMENT: "Payment Pending",
@@ -20,28 +21,24 @@ const statusLabel: Record<OrderStatus, string> = {
   REVISION: "Revision",
 };
 
+const statusVariant: Record<OrderStatus, "warning" | "default" | "secondary" | "success" | "destructive"> = {
+  PENDING_PAYMENT: "warning",
+  PAID: "default",
+  IN_PROGRESS: "secondary",
+  DELIVERED: "success",
+  COMPLETED: "success",
+  REVISION: "destructive",
+};
+
 export default async function AdminOrderDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const { user, profile } = await requireAdmin();
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
-  if (!user) redirect("/login");
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role, full_name")
-    .eq("id", user.id)
-    .single<Pick<Profile, "role" | "full_name">>();
-
-  if (!profile || profile.role !== "ADMIN") redirect("/dashboard");
-
-  // Fetch order with user email
   const { data: order, error } = await supabase
     .from("orders")
     .select("*, services(name), profiles!orders_user_id_fkey(email, full_name)")
@@ -52,7 +49,6 @@ export default async function AdminOrderDetailPage({
     redirect("/admin/orders");
   }
 
-  // Fetch files
   const { data: files } = await supabase
     .from("order_files")
     .select("*")
@@ -88,7 +84,7 @@ export default async function AdminOrderDetailPage({
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <Badge variant="secondary" className="text-sm px-4 py-1">
+          <Badge variant={statusVariant[orderData.status]} className="text-sm px-4 py-1">
             {statusLabel[orderData.status]}
           </Badge>
           <AdminStatusDropdown orderId={orderData.id} currentStatus={orderData.status} />
@@ -160,7 +156,6 @@ export default async function AdminOrderDetailPage({
 
               <Separator />
 
-              {/* Admin File Upload */}
               <div>
                 <p className="text-sm font-medium mb-2">Upload Final Deliverable</p>
                 <AdminFileUpload orderId={orderData.id} />

@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronDown, Loader2 } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -12,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
+import { updateOrderStatus } from "../status-actions";
 import type { OrderStatus } from "@/lib/types";
 
 const statusLabel: Record<OrderStatus, string> = {
@@ -34,22 +34,19 @@ export function AdminStatusDropdown({
 }: AdminStatusDropdownProps) {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const supabase = createClient();
   const { toast } = useToast();
 
   const handleChange = async (newStatus: OrderStatus) => {
     if (newStatus === currentStatus) return;
     setLoading(true);
-    const { error } = await supabase
-      .from("orders")
-      .update({ status: newStatus, updated_at: new Date().toISOString() })
-      .eq("id", orderId);
 
-    if (error) {
+    const result = await updateOrderStatus(orderId, newStatus, currentStatus);
+
+    if (!result.success) {
       toast({
         variant: "destructive",
         title: "Update failed",
-        description: error.message,
+        description: result.error,
       });
     } else {
       toast({
