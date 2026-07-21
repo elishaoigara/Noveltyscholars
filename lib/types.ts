@@ -109,6 +109,14 @@ export type ContactMessage = {
   is_read: boolean;
 };
 
+export type DbSiteSettings = {
+  id: number;
+  contact_email: string;
+  contact_phone: string;
+  whatsapp_number: string;
+  updated_at: string;
+};
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Json = any;
 
@@ -194,6 +202,12 @@ export type Database = {
         Row: ContactMessage;
         Insert: Omit<ContactMessage, "id" | "created_at">;
         Update: Partial<Omit<ContactMessage, "id" | "created_at">>;
+        Relationships: [];
+      };
+      site_settings: {
+        Row: DbSiteSettings;
+        Insert: Partial<Omit<DbSiteSettings, "updated_at">> & { id: number };
+        Update: Partial<Omit<DbSiteSettings, "id">>;
         Relationships: [];
       };
     };
