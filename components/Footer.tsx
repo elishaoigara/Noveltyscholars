@@ -1,7 +1,11 @@
 import Link from "next/link";
 import { Mail, Phone } from "lucide-react";
+import { getSiteSettings } from "@/lib/settings";
 
-export function Footer() {
+export async function Footer() {
+  const settings = await getSiteSettings();
+  const phoneHref = `tel:${settings.contact_phone.replace(/[^\d+]/g, "")}`;
+
   return (
     <footer className="bg-slate-900 dark:bg-[#050b16] text-slate-300 border-t border-white/5">
       <div className="container mx-auto px-4 py-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -84,19 +88,19 @@ export function Footer() {
             <li className="flex items-start gap-2">
               <Mail className="h-4 w-4 shrink-0 mt-0.5" />
               <a
-                href="mailto:noveltyscholars@gmail.com"
+                href={`mailto:${settings.contact_email}`}
                 className="hover:text-primary transition-colors break-all"
               >
-                noveltyscholars@gmail.com
+                {settings.contact_email}
               </a>
             </li>
             <li className="flex items-center gap-2">
               <Phone className="h-4 w-4 shrink-0" />
               <a
-                href="tel:+12095600466"
+                href={phoneHref}
                 className="hover:text-primary transition-colors"
               >
-                +1 (209) 560-0466
+                {settings.contact_phone}
               </a>
             </li>
             <li className="text-primary font-medium">

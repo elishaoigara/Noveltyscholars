@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Search, Loader2 } from "lucide-react";
+import { Search, Loader2, Download, X } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
-import { updateOrderStatus } from "./status-actions";
+import { updateOrderStatus, bulkUpdateOrderStatus } from "./status-actions";
 import type { Order, OrderStatus } from "@/lib/types";
 
 const statusVariant: Record<OrderStatus, "warning" | "default" | "secondary" | "success" | "destructive"> = {
@@ -52,11 +52,67 @@ const ALL_STATUSES: OrderStatus[] = [
   "REVISION",
 ];
 
+type OrderRow = Order & {
+  services?: { name: string } | null;
+  profiles?: { email: string; full_name: string } | null;
+};
+
 interface AdminOrdersTableProps {
-  orders: (Order & {
-    services?: { name: string } | null;
-    profiles?: { email: string; full_name: string } | null;
-  })[];
+  orders: OrderRow[];
+}
+
+function downloadCsv(rows: OrderRow[]) {
+  const headers = [
+    "Order Code",
+    "Customer Name",
+    "Customer Email",
+    "Service",
+    "Subject",
+    "Academic Level",
+    "Pages",
+    "Words",
+    "Deadline",
+    "Status",
+    "Total Price",
+    "Created At",
+  ];
+
+  const escape = (val: string | number) => {
+    const str = String(val ?? "");
+    return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+  };
+
+  const lines = [
+    headers.join(","),
+    ...rows.map((o) =>
+      [
+        o.order_code,
+        o.profiles?.full_name || "",
+        o.profiles?.email || "",
+        o.services?.name || "",
+        o.subject,
+        o.academic_level,
+        o.pages,
+        o.words,
+        o.deadline ? new Date(o.deadline).toLocaleDateString() : "",
+        statusLabel[o.status],
+        o.total_price,
+        new Date(o.created_at).toLocaleDateString(),
+      ]
+        .map(escape)
+        .join(",")
+    ),
+  ];
+
+  const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `orders-export-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }
 
 export function AdminOrdersTable({ orders }: AdminOrdersTableProps) {
@@ -65,11 +121,11 @@ export function AdminOrdersTable({ orders }: AdminOrdersTableProps) {
 
   const [search, setSearch] = useState("");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkLoading, setBulkLoading] = useState(false);
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
 
-  // Status filter lives in the URL (?status=PAID) so it's shareable/bookmarkable
-  // and survives a refresh.
   const statusFilter = searchParams.get("status") || "all";
 
   const setStatusFilter = (value: string) => {
@@ -95,25 +151,83 @@ export function AdminOrdersTable({ orders }: AdminOrdersTableProps) {
     return matchesSearch && matchesStatus;
   });
 
+  const allVisibleSelected = filtered.length > 0 && filtered.every((o) => selected.has(o.id));
+
+  const toggleSelectAll = () => {
+    setSelected((prev) => {
+      if (allVisibleSelected) {
+        const next = new Set(prev);
+        filtered.forEach((o) => next.delete(o.id));
+        return next;
+      }
+      const next = new Set(prev);
+      filtered.forEach((o) => next.add(o.id));
+      return next;
+    });
+  };
+
+  const toggleSelectOne = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
   const handleStatusChange = async (orderId: string, currentStatus: OrderStatus, newStatus: OrderStatus) => {
     setUpdatingId(orderId);
     const result = await updateOrderStatus(orderId, newStatus, currentStatus);
 
     if (!result.success) {
-      toast({
-        variant: "destructive",
-        title: "Update failed",
-        description: result.error,
-      });
+      toast({ variant: "destructive", title: "Update failed", description: result.error });
     } else {
-      toast({
-        variant: "success",
-        title: "Status updated",
-        description: `Order status changed to ${statusLabel[newStatus]}`,
-      });
+      toast({ variant: "success", title: "Status updated", description: `Order status changed to ${statusLabel[newStatus]}` });
       router.refresh();
     }
     setUpdatingId(null);
+  };
+
+  const handleBulkStatusChange = async (newStatus: OrderStatus) => {
+    const selectedOrders = orders
+      .filter((o) => selected.has(o.id))
+      .map((o) => ({ id: o.id, status: o.status }));
+
+    if (selectedOrders.length === 0) return;
+
+    setBulkLoading(true);
+    const result = await bulkUpdateOrderStatus(selectedOrders, newStatus);
+    setBulkLoading(false);
+
+    if (result.updated > 0) {
+      toast({
+        variant: "success",
+        title: `${result.updated} order${result.updated > 1 ? "s" : ""} updated`,
+        description:
+          result.skipped > 0
+            ? `${result.skipped} order${result.skipped > 1 ? "s" : ""} couldn't be moved to ${statusLabel[newStatus]} (illegal transition) and were skipped.`
+            : `All selected orders moved to ${statusLabel[newStatus]}.`,
+      });
+    } else {
+      toast({
+        variant: "destructive",
+        title: "No orders updated",
+        description: `None of the selected orders can move to ${statusLabel[newStatus]} from their current status.`,
+      });
+    }
+
+    setSelected(new Set());
+    router.refresh();
+  };
+
+  const handleExport = () => {
+    const rows = selected.size > 0 ? orders.filter((o) => selected.has(o.id)) : filtered;
+    downloadCsv(rows);
+    toast({
+      variant: "success",
+      title: "Export ready",
+      description: `${rows.length} order${rows.length === 1 ? "" : "s"} exported to CSV.`,
+    });
   };
 
   return (
@@ -146,7 +260,44 @@ export function AdminOrdersTable({ orders }: AdminOrdersTableProps) {
             ))}
           </SelectContent>
         </Select>
+        <Button variant="outline" className="gap-2 w-full sm:w-auto" onClick={handleExport}>
+          <Download className="h-4 w-4" />
+          Export CSV{selected.size > 0 ? ` (${selected.size})` : ""}
+        </Button>
       </div>
+
+      {/* Bulk action bar */}
+      {selected.size > 0 && (
+        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3">
+          <span className="text-sm font-medium">
+            {selected.size} order{selected.size > 1 ? "s" : ""} selected
+          </span>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" disabled={bulkLoading} className="gap-2">
+                {bulkLoading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                Move to status...
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              {ALL_STATUSES.map((status) => (
+                <DropdownMenuItem key={status} onClick={() => handleBulkStatusChange(status)}>
+                  {statusLabel[status]}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-1 text-muted-foreground"
+            onClick={() => setSelected(new Set())}
+          >
+            <X className="h-3.5 w-3.5" />
+            Clear selection
+          </Button>
+        </div>
+      )}
 
       {/* Table */}
       <div className="surface-raised rounded-xl border border-border overflow-hidden">
@@ -154,6 +305,15 @@ export function AdminOrdersTable({ orders }: AdminOrdersTableProps) {
           <table className="w-full">
             <thead>
               <tr className="border-b border-border surface-sunken text-sm text-muted-foreground">
+                <th className="py-3 px-4 w-10">
+                  <input
+                    type="checkbox"
+                    checked={allVisibleSelected}
+                    onChange={toggleSelectAll}
+                    className="rounded border-gray-300"
+                    aria-label="Select all visible orders"
+                  />
+                </th>
                 <th className="text-left py-3 px-4 font-medium">Order Code</th>
                 <th className="text-left py-3 px-4 font-medium">Customer</th>
                 <th className="text-left py-3 px-4 font-medium hidden md:table-cell">
@@ -170,13 +330,22 @@ export function AdminOrdersTable({ orders }: AdminOrdersTableProps) {
             <tbody>
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="text-center py-8 text-muted-foreground">
+                  <td colSpan={8} className="text-center py-8 text-muted-foreground">
                     No orders found.
                   </td>
                 </tr>
               ) : (
                 filtered.map((order) => (
                   <tr key={order.id} className="border-b border-border last:border-0 text-sm hover:bg-primary/5">
+                    <td className="py-3 px-4">
+                      <input
+                        type="checkbox"
+                        checked={selected.has(order.id)}
+                        onChange={() => toggleSelectOne(order.id)}
+                        className="rounded border-gray-300"
+                        aria-label={`Select order ${order.order_code}`}
+                      />
+                    </td>
                     <td className="py-3 px-4 font-mono text-xs">{order.order_code}</td>
                     <td className="py-3 px-4">
                       <p className="font-medium">{order.profiles?.full_name || "N/A"}</p>
@@ -200,10 +369,7 @@ export function AdminOrdersTable({ orders }: AdminOrdersTableProps) {
                             {updatingId === order.id ? (
                               <Loader2 className="h-4 w-4 animate-spin" />
                             ) : (
-                              <Badge
-                                variant={statusVariant[order.status]}
-                                className="cursor-pointer"
-                              >
+                              <Badge variant={statusVariant[order.status]} className="cursor-pointer">
                                 {statusLabel[order.status]}
                               </Badge>
                             )}

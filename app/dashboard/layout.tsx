@@ -19,9 +19,14 @@ export default async function DashboardLayout({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("full_name, role")
+    .select("full_name, role, is_banned")
     .eq("id", user.id)
-    .single<Pick<Profile, "full_name" | "role">>();
+    .single<Pick<Profile, "full_name" | "role" | "is_banned">>();
+
+  if (profile?.is_banned) {
+    await supabase.auth.signOut();
+    redirect("/login?banned=1");
+  }
 
   return (
     <div className="flex min-h-[calc(100vh-110px)]">

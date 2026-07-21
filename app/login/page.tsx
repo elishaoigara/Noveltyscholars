@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { LogIn, Loader2 } from "lucide-react";
+import { LogIn, Loader2, AlertTriangle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,8 +25,11 @@ type LoginForm = z.infer<typeof loginSchema>;
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
   const { toast } = useToast();
+
+  const wasBanned = searchParams.get("banned") === "1";
 
   const {
     register,
@@ -54,12 +57,22 @@ export default function LoginPage() {
     }
 
     if (authData.user) {
-      // Check role
       const { data: profile } = await supabase
         .from("profiles")
-        .select("role")
+        .select("role, is_banned")
         .eq("id", authData.user.id)
-        .single<Pick<Profile, "role">>();
+        .single<Pick<Profile, "role" | "is_banned">>();
+
+      if (profile?.is_banned) {
+        await supabase.auth.signOut();
+        toast({
+          variant: "destructive",
+          title: "Account suspended",
+          description: "This account has been suspended. Contact support if you believe this is a mistake.",
+        });
+        setLoading(false);
+        return;
+      }
 
       if (profile?.role === "ADMIN") {
         router.push("/admin");
@@ -83,6 +96,14 @@ export default function LoginPage() {
             Sign in to your NoveltyScholars account
           </CardDescription>
         </CardHeader>
+
+        {wasBanned && (
+          <div className="mx-6 mb-2 flex items-start gap-2 rounded-lg border border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-950/30 p-3 text-sm text-red-700 dark:text-red-400">
+            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+            <span>This account has been suspended. Contact support if you believe this is a mistake.</span>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className="space-y-4">
             <div className="space-y-2">

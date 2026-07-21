@@ -3,6 +3,7 @@ export type Profile = {
   email: string;
   full_name: string;
   role: "STUDENT" | "ADMIN";
+  is_banned?: boolean;
   created_at: string;
 };
 
