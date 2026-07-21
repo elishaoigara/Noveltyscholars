@@ -206,8 +206,8 @@ export type Database = {
       };
       site_settings: {
         Row: DbSiteSettings;
-        Insert: Partial<Omit<DbSiteSettings, "updated_at">> & { id: number };
-        Update: Partial<Omit<DbSiteSettings, "id">>;
+        Insert: Partial<DbSiteSettings> & { id: number };
+        Update: Partial<DbSiteSettings>;
         Relationships: [];
       };
     };
