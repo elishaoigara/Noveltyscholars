@@ -33,6 +33,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Plus, Pencil, Trash2, Loader2, Settings, Star } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
+import { deleteServiceAction, saveServiceAction } from "./actions";
 
 type ServiceType = "STANDARD" | "ONLINE_CLASS" | "ONLINE_EXAM";
 
@@ -154,8 +155,8 @@ export function ServicesManager() {
       .map((f) => f.trim())
       .filter(Boolean);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const payload: any = {
+    const payload = {
+      id: editingService?.id,
       name,
       slug,
       description,
@@ -165,21 +166,10 @@ export function ServicesManager() {
       is_featured: isFeatured,
     };
 
-    let error;
+    const result = await saveServiceAction(payload);
 
-    if (editingService) {
-      const result = await supabase
-        .from("services")
-        .update(payload)
-        .eq("id", editingService.id);
-      error = result.error;
-    } else {
-      const result = await supabase.from("services").insert(payload);
-      error = result.error;
-    }
-
-    if (error) {
-      toast({ variant: "destructive", title: "Error", description: error.message });
+    if (!result.success) {
+      toast({ variant: "destructive", title: "Error", description: result.error });
     } else {
       toast({
         title: editingService ? "Service updated!" : "Service created!",
@@ -196,13 +186,10 @@ export function ServicesManager() {
   const handleDelete = async (service: Service) => {
     if (!confirm(`Delete service "${service.name}"? This cannot be undone.`)) return;
 
-    const { error } = await supabase
-      .from("services")
-      .delete()
-      .eq("id", service.id);
+    const result = await deleteServiceAction(service.id);
 
-    if (error) {
-      toast({ variant: "destructive", title: "Error", description: error.message });
+    if (!result.success) {
+      toast({ variant: "destructive", title: "Error", description: result.error });
     } else {
       toast({ title: "Service deleted", description: `"${service.name}" has been removed.` });
       fetchServices();

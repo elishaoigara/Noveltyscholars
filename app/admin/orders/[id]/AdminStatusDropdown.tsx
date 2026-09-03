@@ -40,7 +40,7 @@ export function AdminStatusDropdown({
     if (newStatus === currentStatus) return;
     setLoading(true);
 
-    const result = await updateOrderStatus(orderId, newStatus, currentStatus);
+    const result = await updateOrderStatus(orderId, newStatus);
 
     if (!result.success) {
       toast({

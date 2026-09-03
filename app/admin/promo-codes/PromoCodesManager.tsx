@@ -32,6 +32,11 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Plus, Pencil, Trash2, Loader2, Tag, Power } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
+import {
+  deletePromoCodeAction,
+  savePromoCodeAction,
+  setPromoCodeActiveAction,
+} from "./actions";
 
 type DiscountType = "PERCENTAGE" | "FIXED";
 
@@ -138,8 +143,8 @@ export function PromoCodesManager() {
 
     setSaving(true);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const payload: any = {
+    const payload = {
+      id: editingCode?.id,
       code,
       discount_type: discountType,
       discount_value,
@@ -149,26 +154,14 @@ export function PromoCodesManager() {
       is_active: isActive,
     };
 
-    let error;
+    const result = await savePromoCodeAction(payload);
 
-    if (editingCode) {
-      const result = await supabase
-        .from("promo_codes")
-        .update(payload)
-        .eq("id", editingCode.id);
-      error = result.error;
-    } else {
-      payload.used_count = 0;
-      const result = await supabase.from("promo_codes").insert(payload);
-      error = result.error;
-    }
-
-    if (error) {
-      const isDuplicate = error.message.toLowerCase().includes("duplicate");
+    if (!result.success) {
+      const isDuplicate = result.error?.toLowerCase().includes("duplicate");
       toast({
         variant: "destructive",
         title: "Error",
-        description: isDuplicate ? `Code "${code}" already exists.` : error.message,
+        description: isDuplicate ? `Code "${code}" already exists.` : result.error,
       });
     } else {
       toast({
@@ -184,13 +177,10 @@ export function PromoCodesManager() {
   };
 
   const handleToggleActive = async (promo: PromoCode) => {
-    const { error } = await supabase
-      .from("promo_codes")
-      .update({ is_active: !promo.is_active })
-      .eq("id", promo.id);
+    const result = await setPromoCodeActiveAction(promo.id, !promo.is_active);
 
-    if (error) {
-      toast({ variant: "destructive", title: "Error", description: error.message });
+    if (!result.success) {
+      toast({ variant: "destructive", title: "Error", description: result.error });
     } else {
       toast({
         title: promo.is_active ? "Code deactivated" : "Code activated",
@@ -203,10 +193,10 @@ export function PromoCodesManager() {
   const handleDelete = async (promo: PromoCode) => {
     if (!confirm(`Delete promo code "${promo.code}"? This cannot be undone.`)) return;
 
-    const { error } = await supabase.from("promo_codes").delete().eq("id", promo.id);
+    const result = await deletePromoCodeAction(promo.id);
 
-    if (error) {
-      toast({ variant: "destructive", title: "Error", description: error.message });
+    if (!result.success) {
+      toast({ variant: "destructive", title: "Error", description: result.error });
     } else {
       toast({ title: "Promo code deleted", description: `"${promo.code}" has been removed.` });
       fetchCodes();
@@ -235,7 +225,7 @@ export function PromoCodesManager() {
         <div className="text-center py-12 border rounded-xl surface-sunken">
           <Tag className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
           <p className="text-muted-foreground">
-            No promo codes yet. Create your first one to enable discounts at checkout.
+            No promo codes yet. Create your first discount code.
           </p>
         </div>
       ) : (
@@ -330,7 +320,7 @@ export function PromoCodesManager() {
           <DialogHeader>
             <DialogTitle>{editingCode ? "Edit Promo Code" : "Create Promo Code"}</DialogTitle>
             <DialogDescription>
-              Set up a discount code customers can apply at checkout.
+              Configure a discount code for a promotional campaign.
             </DialogDescription>
           </DialogHeader>
 

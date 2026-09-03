@@ -65,8 +65,9 @@ export default function RegisterPage() {
       return;
     }
 
-    if (authData.user) {
-      // Insert into profiles
+    if (authData.user && authData.session) {
+      // When email confirmation is disabled, a session exists immediately.
+      // Confirmed-email signups create their profile in /auth/callback instead.
       const { error: profileError } = await supabase.from("profiles").insert({
         id: authData.user.id,
         email: data.email,

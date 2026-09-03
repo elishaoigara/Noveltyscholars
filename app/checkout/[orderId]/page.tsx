@@ -182,7 +182,7 @@ export default function CheckoutPage() {
 
       <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
         <Shield className="h-4 w-4" />
-        <span>Secure payment &amp; 100% satisfaction guaranteed</span>
+        <span>Secure USD payment processed by Paystack</span>
       </div>
     </div>
   );

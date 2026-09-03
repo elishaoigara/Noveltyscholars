@@ -175,9 +175,9 @@ export function AdminOrdersTable({ orders }: AdminOrdersTableProps) {
     });
   };
 
-  const handleStatusChange = async (orderId: string, currentStatus: OrderStatus, newStatus: OrderStatus) => {
+  const handleStatusChange = async (orderId: string, newStatus: OrderStatus) => {
     setUpdatingId(orderId);
-    const result = await updateOrderStatus(orderId, newStatus, currentStatus);
+    const result = await updateOrderStatus(orderId, newStatus);
 
     if (!result.success) {
       toast({ variant: "destructive", title: "Update failed", description: result.error });
@@ -379,7 +379,7 @@ export function AdminOrdersTable({ orders }: AdminOrdersTableProps) {
                           {ALL_STATUSES.map((status) => (
                             <DropdownMenuItem
                               key={status}
-                              onClick={() => handleStatusChange(order.id, order.status, status)}
+                              onClick={() => handleStatusChange(order.id, status)}
                               disabled={order.status === status}
                             >
                               {statusLabel[status]}

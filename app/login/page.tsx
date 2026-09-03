@@ -30,6 +30,10 @@ export default function LoginPage() {
   const { toast } = useToast();
 
   const wasBanned = searchParams.get("banned") === "1";
+  const requestedRedirect = searchParams.get("redirect");
+  const safeRedirect = requestedRedirect?.startsWith("/") && !requestedRedirect.startsWith("//")
+    ? requestedRedirect
+    : null;
 
   const {
     register,
@@ -74,7 +78,9 @@ export default function LoginPage() {
         return;
       }
 
-      if (profile?.role === "ADMIN") {
+      if (safeRedirect) {
+        router.push(safeRedirect);
+      } else if (profile?.role === "ADMIN") {
         router.push("/admin");
       } else {
         router.push("/dashboard");

@@ -91,7 +91,7 @@ export function PricingCalculator({
           onValueChange={handlePagesChange}
           className="w-full"
         />
-        <p className="text-xs text-body-muted">~{pages[0] * 275} words</p>
+        <p className="text-xs text-body-muted">~{pages[0] * 250} words</p>
       </div>
 
       {/* Academic level */}
@@ -124,7 +124,6 @@ export function PricingCalculator({
             <SelectItem value="3">3 days</SelectItem>
             <SelectItem value="2">2 days</SelectItem>
             <SelectItem value="1">24 hours</SelectItem>
-            <SelectItem value="0.5">12 hours</SelectItem>
           </SelectContent>
         </Select>
       </div>

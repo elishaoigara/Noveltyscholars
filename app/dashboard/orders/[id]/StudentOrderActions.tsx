@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { RotateCcw, CheckCircle2, Loader2 } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { updateStudentOrderStatus } from "./actions";
 
 interface StudentOrderActionsProps {
   orderId: string;
@@ -22,21 +22,17 @@ export function StudentOrderActions({
 }: StudentOrderActionsProps) {
   const [loading, setLoading] = useState<string | null>(null);
   const router = useRouter();
-  const supabase = createClient();
   const { toast } = useToast();
 
   const handleAction = async (action: "REVISION" | "COMPLETED") => {
     setLoading(action);
-    const { error } = await supabase
-      .from("orders")
-      .update({ status: action, updated_at: new Date().toISOString() })
-      .eq("id", orderId);
+    const result = await updateStudentOrderStatus(orderId, action);
 
-    if (error) {
+    if (!result.success) {
       toast({
         variant: "destructive",
         title: "Action failed",
-        description: error.message,
+        description: result.error,
       });
     } else {
       toast({

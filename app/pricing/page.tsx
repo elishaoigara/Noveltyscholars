@@ -19,7 +19,7 @@ export default async function PricingPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-start">
         {/* Calculator */}
-        <PricingCalculator basePrice={15} showPromoCode />
+        <PricingCalculator basePrice={15} />
 
         {/* Pricing Factors */}
         <div className="space-y-6">
@@ -68,7 +68,7 @@ export default async function PricingPage() {
                   <span className="font-medium">+60% urgency</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Less than 24 hours</span>
+                  <span>24 hours</span>
                   <span className="font-medium">+100% urgency</span>
                 </div>
               </div>

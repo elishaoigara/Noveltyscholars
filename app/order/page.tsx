@@ -11,10 +11,11 @@ import {
   Check,
   Loader2,
   Calculator,
-  Shield,
+  Upload,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { calculatePrice, formatCurrency, generateOrderCode } from "@/lib/utils";
+import { calculatePrice, formatCurrency } from "@/lib/utils";
+import { createOrderAction } from "./actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -36,7 +37,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FileUpload } from "@/components/FileUpload";
 import { useToast } from "@/hooks/use-toast";
 import type { Service, ServiceType } from "@/lib/types";
 
@@ -51,7 +51,6 @@ const orderSchema = z.object({
   description: z.string().min(10, "Please provide at least 10 characters"),
   // Online Class / Exam fields
   lms_platform: z.string().optional(),
-  login_credentials: z.string().optional(),
   class_duration: z.string().optional(),
   exam_date: z.string().optional(),
   exam_duration: z.string().optional(),
@@ -67,7 +66,6 @@ function OrderPageContent() {
   const [services, setServices] = useState<Service[]>([]);
   const [loadingServices, setLoadingServices] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
   const [livePrice, setLivePrice] = useState(0);
 
   const router = useRouter();
@@ -91,7 +89,6 @@ function OrderPageContent() {
       })(),
       description: "",
       lms_platform: "",
-      login_credentials: "",
       class_duration: "",
       exam_date: "",
       exam_duration: "",
@@ -199,56 +196,13 @@ function OrderPageContent() {
 
   const onSubmit = async (data: OrderForm) => {
     setSubmitting(true);
+    const result = await createOrderAction(data);
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      toast({
-        variant: "destructive",
-        title: "Not logged in",
-        description: "Please login to place an order.",
-      });
-      router.push("/login");
-      return;
-    }
-
-    const orderCode = generateOrderCode();
-
-    const orderPayload = {
-      order_code: orderCode,
-      user_id: user.id,
-      service_id: data.service_id,
-      subject: data.subject,
-      topic: data.topic,
-      academic_level: data.academic_level,
-      pages: data.pages,
-      words: data.words,
-      deadline: data.deadline,
-      description: data.description,
-      total_price: livePrice,
-      status: "PENDING_PAYMENT",
-      ...(isOnlineClass || isOnlineExam ? {
-        lms_platform: data.lms_platform || null,
-        login_credentials: data.login_credentials || null,
-      } : {}),
-      ...(isOnlineClass ? {
-        class_duration: data.class_duration || null,
-      } : {}),
-    };
-
-    const { data: order, error } = await supabase
-      .from("orders")
-      .insert(orderPayload as any)
-      .select()
-      .single();
-
-    if (error) {
+    if (!result.success || !result.orderId) {
       toast({
         variant: "destructive",
         title: "Order failed",
-        description: error.message,
+        description: result.error || "The order could not be created.",
       });
       setSubmitting(false);
       return;
@@ -256,14 +210,9 @@ function OrderPageContent() {
 
     toast({
       title: "Order placed!",
-      description: `Your order ${orderCode} has been created.`,
+      description: "Your order has been created with a server-verified price.",
     });
-
-    router.push(`/checkout/${order.id}`);
-  };
-
-  const handleFileUploaded = (fileName: string) => {
-    setUploadedFiles((prev) => [...prev, fileName]);
+    router.push(`/checkout/${result.orderId}`);
   };
 
   if (loadingServices) {
@@ -316,7 +265,6 @@ function OrderPageContent() {
                     setValue("service_id", v);
                     // Reset special fields when service changes
                     setValue("lms_platform", "");
-                    setValue("login_credentials", "");
                     setValue("class_duration", "");
                     setValue("exam_date", "");
                     setValue("exam_duration", "");
@@ -489,23 +437,10 @@ function OrderPageContent() {
                 </div>
               )}
 
-              {/* Login credentials for special services */}
               {isSpecialService && (
-                <div className="space-y-2 p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Shield className="h-4 w-4 text-yellow-600" />
-                    <span className="text-sm font-semibold text-yellow-700">
-                      We use bank-level 256-bit encryption to protect your data
-                    </span>
-                  </div>
-                  <Label htmlFor="login_credentials">Login Credentials (Optional at this stage)</Label>
-                  <Textarea
-                    id="login_credentials"
-                    rows={3}
-                    placeholder="You can provide your LMS login credentials now or share them later via our secure chat. Your data is encrypted and never shared."
-                    {...form.register("login_credentials")}
-                    className="text-sm"
-                  />
+                <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+                  Never submit passwords or login credentials in this form. Account-specific
+                  access requirements can be discussed with support after the order is created.
                 </div>
               )}
             </CardContent>
@@ -603,16 +538,15 @@ function OrderPageContent() {
                 )}
               </div>
 
-              {/* File Upload */}
-              <div className="space-y-2">
-                <Label>Reference Files (Optional)</Label>
-                <p className="text-xs text-muted-foreground mb-2">
-                  Upload any reference materials, rubrics, or instructions.
-                </p>
-                <FileUpload
-                  orderId="pending"
-                  onUploadComplete={(file) => handleFileUploaded(file.file_name)}
-                />
+              <div className="flex items-start gap-3 rounded-xl border border-border bg-muted/40 p-4">
+                <Upload className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                <div>
+                  <p className="text-sm font-medium">Reference files are added after checkout</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Creating the order first ensures every upload is attached to the correct,
+                    private order record.
+                  </p>
+                </div>
               </div>
             </CardContent>
             <CardFooter className="justify-between border-t pt-6">
@@ -718,18 +652,8 @@ function OrderPageContent() {
                 )}
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Files</span>
-                  <span className="font-medium">
-                    {uploadedFiles.length > 0
-                      ? `${uploadedFiles.length} file(s)`
-                      : "None"}
-                  </span>
+                  <span className="font-medium">Add from your order page</span>
                 </div>
-                {watchedValues.login_credentials && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Credentials</span>
-                    <Badge className="bg-green-100 text-green-700">Securely Provided ✓</Badge>
-                  </div>
-                )}
               </div>
 
               {/* Price Summary */}

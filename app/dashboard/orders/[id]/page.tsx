@@ -5,6 +5,7 @@ import { StatusTimeline } from "@/components/StatusTimeline";
 import { StudentOrderActions } from "./StudentOrderActions";
 import { OrderChatWrapper } from "./OrderChatWrapper";
 import { OrderFilesList } from "./OrderFilesList";
+import { StudentReferenceUpload } from "./StudentReferenceUpload";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -62,7 +63,7 @@ export default async function StudentOrderDetailPage({
     orderFiles.map(async (f) => {
       const { data } = await supabase.storage
         .from("order-files")
-        .createSignedUrl(f.file_url, 60);
+        .createSignedUrl(f.file_url, 15 * 60);
       return { ...f, signedUrl: data?.signedUrl || null };
     })
   );
@@ -150,6 +151,10 @@ export default async function StudentOrderDetailPage({
               <CardTitle className="text-lg">Files</CardTitle>
             </CardHeader>
             <CardContent>
+              <div className="mb-6">
+                <p className="mb-2 text-sm font-medium">Add reference files</p>
+                <StudentReferenceUpload orderId={order.id} />
+              </div>
               <OrderFilesList files={filesWithUrls} />
             </CardContent>
           </Card>

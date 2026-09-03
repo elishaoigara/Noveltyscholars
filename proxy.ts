@@ -3,13 +3,9 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import type { Database, Profile } from "@/lib/types";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-
-  // Update session first
   const response = await updateSession(request);
-
-  // Protected routes
   const isDashboard = pathname.startsWith("/dashboard");
   const isAdmin = pathname.startsWith("/admin");
 
@@ -23,7 +19,7 @@ export async function middleware(request: NextRequest) {
             return request.cookies.getAll();
           },
           setAll() {
-            // No-op in middleware check
+            // Session cookie updates are handled by updateSession above.
           },
         },
       }
@@ -39,17 +35,18 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(redirectUrl);
     }
 
-    // Admin route guard
-    if (isAdmin) {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .single<Pick<Profile, "role">>();
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role, is_banned")
+      .eq("id", user.id)
+      .single<Pick<Profile, "role" | "is_banned">>();
 
-      if (!profile || profile.role !== "ADMIN") {
-        return NextResponse.redirect(new URL("/dashboard", request.url));
-      }
+    if (!profile || profile.is_banned) {
+      return NextResponse.redirect(new URL("/auth/signout?banned=1", request.url));
+    }
+
+    if (isAdmin && profile.role !== "ADMIN") {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
     }
   }
 
@@ -58,13 +55,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public files
-     */
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

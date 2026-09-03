@@ -82,7 +82,7 @@ export default function TakeMyOnlineExamPage() {
             At NoveltyScholars, our exam writing service is trusted by thousands of students globally. Whether it&apos;s a timed quiz, a proctored exam, or a take-home test — our experts are ready.
           </p>
           <p className="text-body mb-8">
-            We cover all subjects including math, science, nursing, business, law, and more. Simply share your login credentials securely through our platform and we&apos;ll handle the rest.
+            We cover all subjects including math, science, nursing, business, law, and more. Share the exam requirements and reference materials through your private order page. Never submit account passwords.
           </p>
           <div className="text-center">
             <Link href="/order?service_type=ONLINE_EXAM">

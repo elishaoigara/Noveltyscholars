@@ -61,7 +61,7 @@ export default async function AdminOrderDetailPage({
     orderFiles.map(async (f) => {
       const { data } = await supabase.storage
         .from("order-files")
-        .createSignedUrl(f.file_url, 60);
+        .createSignedUrl(f.file_url, 15 * 60);
       return { ...f, signedUrl: data?.signedUrl || null };
     })
   );

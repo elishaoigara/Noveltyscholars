@@ -68,8 +68,7 @@ export function Header() {
     >
       {/* Announcement bar */}
       <div className="bg-primary text-white text-center text-[11px] sm:text-xs py-1.5 px-3 leading-snug">
-        Order your Assignment today and save 15% with code{" "}
-        <strong>ESSAYHELP</strong>
+        Secure USD checkout powered by Paystack
       </div>
 
       <div className="container mx-auto flex h-20 items-center justify-between px-6">

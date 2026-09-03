@@ -60,6 +60,49 @@ export async function POST(request: Request) {
 
     const payableAmount = order.final_price ?? order.total_price;
     const expectedAmount = toPaystackSubunit(payableAmount);
+
+    const { data: activePayment } = await serviceClient
+      .from("payments")
+      .select("reference, status, authorization_url, created_at")
+      .eq("order_id", order.id)
+      .in("status", ["INITIALIZED", "PENDING"])
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    const activePaymentAgeMs = activePayment
+      ? Date.now() - new Date(activePayment.created_at).getTime()
+      : 0;
+
+    if (
+      activePayment?.status === "PENDING" &&
+      activePayment.authorization_url &&
+      activePaymentAgeMs < 10 * 60 * 1000
+    ) {
+      return NextResponse.json({
+        success: true,
+        authorizationUrl: activePayment.authorization_url,
+        reference: activePayment.reference,
+      });
+    }
+
+    if (activePayment) {
+      if (activePaymentAgeMs < 10 * 60 * 1000) {
+        return NextResponse.json(
+          { success: false, error: "Payment is already being prepared. Please try again shortly." },
+          { status: 409 }
+        );
+      }
+      await serviceClient
+        .from("payments")
+        .update({
+          status: "FAILED",
+          failure_reason: "Checkout initialization expired",
+          updated_at: new Date().toISOString(),
+        })
+        .eq("reference", activePayment.reference);
+    }
+
     const safeOrderCode = order.order_code.replace(/[^a-zA-Z0-9.-]/g, "");
     const reference = `NS-${safeOrderCode}-${Date.now()}-${randomUUID().slice(0, 8)}`;
     const callbackUrl = `${getAppUrl(request)}/payment/callback`;

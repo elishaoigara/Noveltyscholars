@@ -38,10 +38,10 @@ export default async function HomePage() {
             {/* Left: Feature bullets */}
             <div className="space-y-5 order-2 lg:order-1">
               <div className="bg-white/10 dark:bg-white/5 backdrop-blur-sm rounded-2xl p-7 space-y-2 border border-white/15">
-                <h3 className="font-bold text-white text-lg">Discounts Upto 50%</h3>
+                <h3 className="font-bold text-white text-lg">Transparent USD Pricing</h3>
                 <p className="text-slate-300 leading-relaxed">
-                  Get massive discounts when you use our service. Rewards for
-                  first-time users, referrals, and reaching 10+ orders.
+                  Review an itemized estimate before checkout, with the final amount
+                  verified securely by the server.
                 </p>
               </div>
               <div className="bg-white/10 dark:bg-white/5 backdrop-blur-sm rounded-2xl p-7 space-y-2 border border-white/15">
@@ -287,7 +287,7 @@ export default async function HomePage() {
               on deadline and academic level.
             </p>
           </div>
-          <PricingCalculator basePrice={15} showPromoCode />
+          <PricingCalculator basePrice={15} />
         </div>
       </section>
 

@@ -4,7 +4,8 @@ import { useState } from "react";
 import { Check, X, Loader2, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { validatePromoCode, formatCurrency } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
+import { validatePromoCodeAction } from "@/app/actions/promo";
 
 interface PromoCodeInputProps {
   orderTotal: number;
@@ -34,7 +35,7 @@ export default function PromoCodeInput({
     setSuccess(false);
 
     try {
-      const result = await validatePromoCode(code, orderTotal);
+      const result = await validatePromoCodeAction(code, orderTotal);
 
       if (result.valid) {
         setSuccess(true);

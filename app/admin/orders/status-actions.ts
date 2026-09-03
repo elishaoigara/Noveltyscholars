@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { requireAdmin } from "@/lib/admin-auth";
 import type { OrderStatus } from "@/lib/types";
 
@@ -28,10 +28,19 @@ const ALLOWED_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
 async function applyStatusUpdate(
   orderId: string,
   newStatus: OrderStatus,
-  currentStatus: OrderStatus,
   user: { id: string },
   profile: { full_name: string } | null
 ): Promise<{ success: boolean; error?: string }> {
+  const supabase = createServiceClient();
+  const { data: order, error: fetchError } = await supabase
+    .from("orders")
+    .select("status")
+    .eq("id", orderId)
+    .single();
+
+  if (fetchError || !order) return { success: false, error: "Order not found." };
+  const currentStatus = order.status;
+
   if (newStatus === currentStatus) {
     return { success: false, error: "Order is already in that status." };
   }
@@ -44,15 +53,16 @@ async function applyStatusUpdate(
     };
   }
 
-  const supabase = await createClient();
-
-  const { error: updateError } = await supabase
+  const { data: updated, error: updateError } = await supabase
     .from("orders")
     .update({ status: newStatus, updated_at: new Date().toISOString() })
-    .eq("id", orderId);
+    .eq("id", orderId)
+    .eq("status", currentStatus)
+    .select("id")
+    .single();
 
-  if (updateError) {
-    return { success: false, error: updateError.message };
+  if (updateError || !updated) {
+    return { success: false, error: "The order status changed. Refresh and try again." };
   }
 
   await supabase.from("messages").insert({
@@ -66,12 +76,11 @@ async function applyStatusUpdate(
 
 export async function updateOrderStatus(
   orderId: string,
-  newStatus: OrderStatus,
-  currentStatus: OrderStatus
+  newStatus: OrderStatus
 ): Promise<{ success: boolean; error?: string }> {
   const { user, profile } = await requireAdmin();
 
-  const result = await applyStatusUpdate(orderId, newStatus, currentStatus, user, profile);
+  const result = await applyStatusUpdate(orderId, newStatus, user, profile);
 
   if (result.success) {
     revalidatePath("/admin/orders");
@@ -99,7 +108,7 @@ export async function bulkUpdateOrderStatus(
   const errors: string[] = [];
 
   for (const order of orders) {
-    const result = await applyStatusUpdate(order.id, newStatus, order.status, user, profile);
+    const result = await applyStatusUpdate(order.id, newStatus, user, profile);
     if (result.success) {
       updated += 1;
       revalidatePath(`/admin/orders/${order.id}`);

@@ -12,7 +12,7 @@ const inter = Inter({
   display: "swap",
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://noveltyscholars.com";
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://noveltyscholars.vercel.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

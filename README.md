@@ -1,10 +1,10 @@
 # NoveltyScholars - Academic Order Platform
 
-A full-stack academic writing order platform built with Next.js 15, Supabase, and Tailwind CSS.
+A full-stack academic writing order platform built with Next.js 16, Supabase, and Tailwind CSS.
 
 ## Tech Stack
 
-- **Frontend:** Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS, shadcn/ui
+- **Frontend:** Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS, shadcn/ui
 - **Backend:** Supabase (Auth, Database, Storage, Realtime)
 - **Forms:** React Hook Form + Zod
 - **Icons:** Lucide React
@@ -104,8 +104,10 @@ ALTER TABLE order_files ENABLE ROW LEVEL SECURITY;
 ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies
-CREATE POLICY "Allow all read profiles" ON profiles FOR SELECT USING (true);
-CREATE POLICY "Allow insert own profile" ON profiles FOR INSERT WITH CHECK (auth.uid() = id);
+CREATE POLICY "Allow read own profile" ON profiles FOR SELECT USING (auth.uid() = id);
+CREATE POLICY "Allow insert own student profile" ON profiles FOR INSERT WITH CHECK (
+  auth.uid() = id AND role = 'STUDENT' AND email = (auth.jwt() ->> 'email')
+);
 
 CREATE POLICY "Allow all read services" ON services FOR SELECT USING (true);
 
@@ -113,21 +115,29 @@ CREATE POLICY "Allow users to read own orders" ON orders FOR SELECT USING (auth.
 CREATE POLICY "Allow admin read all orders" ON orders FOR SELECT USING (
   EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'ADMIN')
 );
-CREATE POLICY "Allow insert own orders" ON orders FOR INSERT WITH CHECK (auth.uid() = user_id);
+-- Orders are inserted by the authenticated server action using the service role.
+-- Do not add a browser INSERT policy: prices must be calculated on the server.
 
 CREATE POLICY "Allow read order files" ON order_files FOR SELECT USING (
   EXISTS (SELECT 1 FROM orders WHERE id = order_files.order_id AND user_id = auth.uid())
   OR EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'ADMIN')
 );
-CREATE POLICY "Allow insert order files" ON order_files FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow insert order files" ON order_files FOR INSERT WITH CHECK (
+  uploaded_by = auth.uid() AND (
+    EXISTS (SELECT 1 FROM orders WHERE id = order_files.order_id AND user_id = auth.uid())
+    OR EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'ADMIN')
+  )
+);
 
 CREATE POLICY "Allow read messages for own orders" ON messages FOR SELECT USING (
   EXISTS (SELECT 1 FROM orders WHERE id = messages.order_id AND user_id = auth.uid())
   OR EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'ADMIN')
 );
 CREATE POLICY "Allow insert messages" ON messages FOR INSERT WITH CHECK (
-  EXISTS (SELECT 1 FROM orders WHERE id = messages.order_id AND user_id = auth.uid())
-  OR EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'ADMIN')
+  user_id = auth.uid() AND (
+    EXISTS (SELECT 1 FROM orders WHERE id = messages.order_id AND user_id = auth.uid())
+    OR EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'ADMIN')
+  )
 );
 ```
 
@@ -135,18 +145,8 @@ CREATE POLICY "Allow insert messages" ON messages FOR INSERT WITH CHECK (
 
 1. Go to Storage in your Supabase dashboard
 2. Create a new bucket named `order-files`
-3. Set it as public (or keep private — we use signed URLs)
-4. Add bucket RLS policies:
-
-```sql
-CREATE POLICY "Allow authenticated uploads" ON storage.objects
-  FOR INSERT TO authenticated
-  WITH CHECK (bucket_id = 'order-files');
-
-CREATE POLICY "Allow public read" ON storage.objects
-  FOR SELECT TO authenticated
-  USING (bucket_id = 'order-files');
-```
+3. Keep the bucket private. The application uses short-lived signed URLs.
+4. Run `SECURITY_FIXES_MIGRATION.sql` to install the order-aware Storage policies.
 
 ### 4. Create Admin User
 
@@ -199,7 +199,7 @@ NEXT_PUBLIC_APP_URL=https://noveltyscholars.vercel.app
 │   │   ├── orders/      # Manage orders
 │   │   └── services/    # CRUD services
 │   ├── api/
-│   │   └── payment/     # Mock payment + webhook
+│   │   └── payment/     # Paystack initialize, verify, and webhook routes
 │   ├── auth/
 │   │   └── callback/    # Auth callback
 │   ├── checkout/        # Checkout page
@@ -255,7 +255,7 @@ NEXT_PUBLIC_APP_URL=https://noveltyscholars.vercel.app
 
 ## Paystack Setup
 
-1. Run `PAYSTACK_MIGRATION.sql` in the Supabase SQL Editor.
+1. Run `PAYSTACK_MIGRATION.sql` and then `SECURITY_FIXES_MIGRATION.sql` in the Supabase SQL Editor.
 2. Add `PAYSTACK_SECRET_KEY` and `NEXT_PUBLIC_APP_URL` to Vercel.
 3. In Paystack test mode, configure:
    - Callback URL: `https://noveltyscholars.vercel.app/payment/callback`

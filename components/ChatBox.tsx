@@ -139,7 +139,7 @@ export function ChatBox({ orderId, userId, profileName = "User" }: ChatBoxProps)
                 {!isMine && (
                   <Avatar className="h-8 w-8 shrink-0">
                     <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                      {getInitials(msg.profiles?.full_name || "User")}
+                      {getInitials(msg.profiles?.full_name || "Support")}
                     </AvatarFallback>
                   </Avatar>
                 )}
@@ -153,7 +153,7 @@ export function ChatBox({ orderId, userId, profileName = "User" }: ChatBoxProps)
                 >
                   {!isMine && (
                     <p className="text-xs font-semibold text-primary mb-0.5">
-                      {msg.profiles?.full_name || "User"}
+                      {msg.profiles?.full_name || "Support"}
                     </p>
                   )}
                   <p className="whitespace-pre-wrap break-words">{msg.content}</p>
@@ -188,6 +188,7 @@ export function ChatBox({ orderId, userId, profileName = "User" }: ChatBoxProps)
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
           placeholder="Type your message..."
+          maxLength={2000}
           className="flex-1 surface-raised"
           disabled={sending}
         />

@@ -37,9 +37,15 @@ export function FileUpload({
   const supabase = createClient();
 
   const uploadFile = async (file: File) => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) throw new Error("You must be signed in to upload files");
+
     const timestamp = Date.now();
     const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-    const filePath = `orders/${orderId}/${timestamp}-${sanitizedName}`;
+    const uniqueId = crypto.randomUUID().slice(0, 8);
+    const filePath = `orders/${orderId}/${user.id}/${timestamp}-${uniqueId}-${sanitizedName}`;
 
     const { data, error } = await supabase.storage
       .from("order-files")
@@ -52,11 +58,6 @@ export function FileUpload({
       throw error;
     }
 
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from("order-files").getPublicUrl(data.path);
-    void publicUrl;
-
     const { data: orderFile, error: dbError } = await supabase
       .from("order_files")
       .insert({
@@ -64,15 +65,17 @@ export function FileUpload({
         file_name: file.name,
         file_url: data.path,
         file_type: fileType,
-        uploaded_by: (await supabase.auth.getUser()).data.user?.id || "",
+        uploaded_by: user.id,
       })
       .select()
       .single();
 
     if (dbError) {
-      console.error("Failed to save file record:", dbError);
+      await supabase.storage.from("order-files").remove([data.path]);
+      throw new Error("The file uploaded but could not be attached to this order");
     }
 
+    if (!orderFile) throw new Error("The uploaded file record was not returned");
     return orderFile as OrderFile;
   };
 
@@ -167,17 +170,20 @@ export function FileUpload({
                   </p>
                 </div>
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="shrink-0"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  removeFile(index);
-                }}
-              >
-                <X className="h-4 w-4" />
-              </Button>
+              {file.status === "error" && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="shrink-0"
+                  aria-label={`Dismiss ${file.name}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeFile(index);
+                  }}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
             </div>
           ))}
         </div>
