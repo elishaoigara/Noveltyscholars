@@ -109,6 +109,32 @@ export type ContactMessage = {
   is_read: boolean;
 };
 
+export type PaymentStatus =
+  | "INITIALIZED"
+  | "PENDING"
+  | "SUCCESS"
+  | "FAILED";
+
+export type Payment = {
+  id: string;
+  order_id: string;
+  user_id: string;
+  provider: "paystack";
+  reference: string;
+  expected_amount: number;
+  amount_paid: number | null;
+  currency: string;
+  status: PaymentStatus;
+  authorization_url: string | null;
+  access_code: string | null;
+  transaction_id: string | null;
+  channel: string | null;
+  failure_reason: string | null;
+  paid_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type DbSiteSettings = {
   id: number;
   contact_email: string;
@@ -204,6 +230,25 @@ export type Database = {
         Update: Partial<Omit<ContactMessage, "id" | "created_at">>;
         Relationships: [];
       };
+      payments: {
+        Row: Payment;
+        Insert: Omit<Payment, "id" | "created_at" | "updated_at">;
+        Update: Partial<Omit<Payment, "id" | "order_id" | "user_id" | "created_at">>;
+        Relationships: [
+          {
+            foreignKeyName: "payments_order_id_fkey";
+            columns: ["order_id"];
+            referencedRelation: "orders";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "payments_user_id_fkey";
+            columns: ["user_id"];
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
       site_settings: {
         Row: DbSiteSettings;
         Insert: Partial<DbSiteSettings> & { id: number };
@@ -212,7 +257,19 @@ export type Database = {
       };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      complete_paystack_payment: {
+        Args: {
+          p_reference: string;
+          p_transaction_id: string;
+          p_amount: number;
+          p_currency: string;
+          p_channel: string | null;
+          p_paid_at: string;
+        };
+        Returns: string;
+      };
+    };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
   };

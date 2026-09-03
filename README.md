@@ -173,6 +173,8 @@ Edit `.env.local`:
 NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+PAYSTACK_SECRET_KEY=sk_test_your-secret-key
+NEXT_PUBLIC_APP_URL=https://noveltyscholars.vercel.app
 ```
 
 ## Running the App
@@ -248,19 +250,24 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 - **File Upload:** Drag & drop to Supabase Storage (PDF, DOCX, ZIP, PNG, JPG)
 - **Realtime Chat:** Supabase Realtime postgres_changes for instant messaging
 - **Admin Panel:** Order management, status changes, service CRUD
-- **Payment:** Mock payment integration (replaceable with Razorpay/Stripe)
+- **Payment:** Paystack hosted checkout with server verification and signed webhooks
 - **Responsive Design:** Mobile-first, works on all devices
 
-## Payment Integration (TODO)
+## Paystack Setup
 
-The mock payment system is in place. To integrate real payments:
+1. Run `PAYSTACK_MIGRATION.sql` in the Supabase SQL Editor.
+2. Add `PAYSTACK_SECRET_KEY` and `NEXT_PUBLIC_APP_URL` to Vercel.
+3. In Paystack test mode, configure:
+   - Callback URL: `https://noveltyscholars.vercel.app/payment/callback`
+   - Webhook URL: `https://noveltyscholars.vercel.app/api/payment/paystack/webhook`
+4. Complete a test payment and confirm that the payment row becomes `SUCCESS`
+   and the associated order becomes `PAID`.
+5. Only after testing, replace the test secret with the live secret and configure
+   the same URLs in Paystack live mode.
 
-1. **Razorpay:** Create orders server-side, use Razorpay checkout, verify via webhook
-2. **Stripe:** Create Stripe Checkout sessions, handle via webhook
-
-Update the following files:
-- `app/api/payment/mock-pay/route.ts` → Replace with Razorpay/Stripe order creation
-- `app/api/payment/webhook/route.ts` → Implement webhook verification
+Paystack is initialized only from the backend. The application calculates the
+USD amount from the stored order, verifies the reference, amount, and currency,
+and validates webhook signatures before updating an order.
 
 ## License
 

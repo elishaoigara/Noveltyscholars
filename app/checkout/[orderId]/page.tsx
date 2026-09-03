@@ -67,10 +67,10 @@ export default function CheckoutPage() {
     loadOrder();
   }, [orderId, supabase, router, toast]);
 
-  const handleMockPayment = async () => {
+  const handlePaystackPayment = async () => {
     setPaying(true);
     try {
-      const res = await fetch("/api/payment/mock-pay", {
+      const res = await fetch("/api/payment/paystack/initialize", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ orderId }),
@@ -78,22 +78,17 @@ export default function CheckoutPage() {
 
       const result = await res.json();
 
-      if (result.success) {
-        toast({
-          variant: "success",
-          title: "Payment successful!",
-          description: "Your order is now being processed.",
-        });
-        router.push(`/dashboard/orders/${orderId}`);
-        router.refresh();
+      if (result.success && result.authorizationUrl) {
+        window.location.assign(result.authorizationUrl);
+        return;
       } else {
-        throw new Error(result.error || "Payment failed");
+        throw new Error(result.error || "Could not start payment");
       }
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Payment failed";
+      const message = err instanceof Error ? err.message : "Could not start payment";
       toast({
         variant: "destructive",
-        title: "Payment failed",
+        title: "Unable to open Paystack",
         description: message,
       });
     }
@@ -109,6 +104,8 @@ export default function CheckoutPage() {
   }
 
   if (!order) return null;
+
+  const payableAmount = order.final_price ?? order.total_price;
 
   return (
     <div className="container mx-auto px-4 py-10 max-w-2xl">
@@ -155,32 +152,30 @@ export default function CheckoutPage() {
             <div>
               <p className="text-muted-foreground">Total Price</p>
               <p className="font-bold text-primary text-lg">
-                {formatCurrency(order.total_price)}
+                {formatCurrency(payableAmount)}
               </p>
             </div>
           </div>
         </CardContent>
         <CardFooter className="flex-col gap-3 border-t pt-6">
-          {/* Mock Payment Button */}
           <Button
             className="w-full gap-2"
             size="lg"
-            onClick={handleMockPayment}
-            disabled={paying}
+            onClick={handlePaystackPayment}
+            disabled={paying || order.status !== "PENDING_PAYMENT"}
           >
             {paying ? (
               <Loader2 className="h-5 w-5 animate-spin" />
             ) : (
               <>
                 <CreditCard className="h-5 w-5" />
-                Pay Now - {formatCurrency(order.total_price)}
+                Pay securely - {formatCurrency(payableAmount)}
                 <ArrowRight className="h-5 w-5" />
               </>
             )}
           </Button>
           <p className="text-xs text-muted-foreground text-center">
-            This is a mock payment for demonstration purposes.
-            {/* TODO: Replace with Razorpay/Stripe - User will integrate */}
+            You will be redirected to Paystack to complete your payment securely.
           </p>
         </CardFooter>
       </Card>
