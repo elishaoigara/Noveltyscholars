@@ -16,7 +16,10 @@ const orderInputSchema = z.object({
   description: z.string().trim().min(10).max(10_000),
   lms_platform: z.string().trim().max(100).optional(),
   class_duration: z.string().trim().max(100).optional(),
-  exam_date: z.string().date().optional(),
+  exam_date: z.preprocess(
+    (value) => value === "" || value === null ? undefined : value,
+    z.string().date().optional()
+  ),
   exam_duration: z.string().trim().max(100).optional(),
 });
 
