@@ -213,9 +213,9 @@ export function ServicesManager() {
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
       ) : services.length === 0 ? (
-        <div className="text-center py-12 border rounded-xl bg-gray-50">
-          <Settings className="h-10 w-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500">No services yet. Create your first one!</p>
+        <div className="rounded-xl border bg-gray-50 py-12 text-center dark:bg-slate-900/50">
+          <Settings className="mx-auto mb-3 h-10 w-10 text-gray-300 dark:text-slate-600" />
+          <p className="text-gray-500 dark:text-slate-400">No services yet. Create your first one!</p>
         </div>
       ) : (
         <div className="border rounded-xl overflow-hidden">
@@ -240,10 +240,10 @@ export function ServicesManager() {
                     <Badge
                       className={
                         service.service_type === "ONLINE_CLASS"
-                          ? "bg-indigo-100 text-indigo-700"
+                          ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300"
                           : service.service_type === "ONLINE_EXAM"
                           ? "bg-orange-100 text-orange-700"
-                          : "bg-gray-100 text-gray-700"
+                          : "bg-gray-100 text-gray-700 dark:bg-slate-800 dark:text-slate-300"
                       }
                     >
                       {service.service_type === "ONLINE_CLASS"

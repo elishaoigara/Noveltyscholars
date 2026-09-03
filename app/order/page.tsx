@@ -337,8 +337,8 @@ function OrderPageContent() {
 
               {/* ONLINE_CLASS specific fields */}
               {isOnlineClass && selectedService && (
-                <div className="space-y-4 p-4 bg-indigo-50 border border-indigo-200 rounded-xl">
-                  <p className="text-sm font-semibold text-indigo-700">
+                <div className="space-y-4 rounded-xl border border-indigo-200 bg-indigo-50 p-4 dark:border-indigo-800/70 dark:bg-indigo-950/30">
+                  <p className="text-sm font-semibold text-indigo-700 dark:text-indigo-300">
                     🎓 Online Class Details
                   </p>
 
@@ -388,8 +388,8 @@ function OrderPageContent() {
 
               {/* ONLINE_EXAM specific fields */}
               {isOnlineExam && selectedService && (
-                <div className="space-y-4 p-4 bg-orange-50 border border-orange-200 rounded-xl">
-                  <p className="text-sm font-semibold text-orange-700">
+                <div className="space-y-4 rounded-xl border border-orange-200 bg-orange-50 p-4 dark:border-orange-800/70 dark:bg-orange-950/30">
+                  <p className="text-sm font-semibold text-orange-700 dark:text-orange-300">
                     📝 Online Exam Details
                   </p>
 
@@ -438,7 +438,7 @@ function OrderPageContent() {
               )}
 
               {isSpecialService && (
-                <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+                <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-800/70 dark:bg-amber-950/30 dark:text-amber-200">
                   Never submit passwords or login credentials in this form. Account-specific
                   access requirements can be discussed with support after the order is created.
                 </div>
