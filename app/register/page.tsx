@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -31,8 +31,14 @@ type RegisterForm = z.infer<typeof registerSchema>;
 export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
   const { toast } = useToast();
+  const requestedRedirect = searchParams.get("redirect");
+  const safeRedirect = requestedRedirect?.startsWith("/") && !requestedRedirect.startsWith("//")
+    ? requestedRedirect
+    : "/dashboard";
 
   const {
     register,
@@ -48,7 +54,7 @@ export default function RegisterPage() {
       email: data.email,
       password: data.password,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(safeRedirect)}`,
         data: {
           full_name: data.full_name,
         },
@@ -68,12 +74,19 @@ export default function RegisterPage() {
     if (authData.user && authData.session) {
       // When email confirmation is disabled, a session exists immediately.
       // Confirmed-email signups create their profile in /auth/callback instead.
-      const { error: profileError } = await supabase.from("profiles").insert({
-        id: authData.user.id,
-        email: data.email,
-        full_name: data.full_name,
-        role: "STUDENT",
-      });
+      const { data: existingProfile } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("id", authData.user.id)
+        .maybeSingle();
+      const { error: profileError } = existingProfile
+        ? { error: null }
+        : await supabase.from("profiles").insert({
+            id: authData.user.id,
+            email: data.email,
+            full_name: data.full_name,
+            role: "STUDENT",
+          });
 
       if (profileError) {
         toast({
@@ -84,6 +97,12 @@ export default function RegisterPage() {
         setLoading(false);
         return;
       }
+    }
+
+    if (authData.session) {
+      router.push(safeRedirect);
+      router.refresh();
+      return;
     }
 
     setSuccess(true);

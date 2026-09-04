@@ -29,6 +29,21 @@ type CreateOrderResult = {
   success: boolean;
   orderId?: string;
   error?: string;
+  field?: keyof CreateOrderInput;
+};
+
+const fieldLabels: Partial<Record<keyof CreateOrderInput, string>> = {
+  service_id: "service",
+  subject: "subject",
+  topic: "topic",
+  academic_level: "academic level",
+  pages: "number of pages",
+  deadline: "deadline",
+  description: "instructions",
+  lms_platform: "learning platform",
+  class_duration: "class duration",
+  exam_date: "exam date",
+  exam_duration: "exam duration",
 };
 
 function isAllowedDate(dateString: string): boolean {
@@ -44,7 +59,13 @@ function isAllowedDate(dateString: string): boolean {
 export async function createOrderAction(input: CreateOrderInput): Promise<CreateOrderResult> {
   const parsed = orderInputSchema.safeParse(input);
   if (!parsed.success) {
-    return { success: false, error: "Please review the order details and try again." };
+    const field = parsed.error.issues[0]?.path[0] as keyof CreateOrderInput | undefined;
+    const label = field ? fieldLabels[field] : undefined;
+    return {
+      success: false,
+      error: label ? `Please check the ${label}.` : "Please review the order details and try again.",
+      field,
+    };
   }
 
   const supabase = await createClient();

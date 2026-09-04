@@ -42,13 +42,13 @@ import type { Service, ServiceType } from "@/lib/types";
 
 const orderSchema = z.object({
   service_id: z.string().min(1, "Please select a service"),
-  subject: z.string().min(2, "Subject is required"),
-  topic: z.string().min(2, "Topic is required"),
+  subject: z.string().trim().min(2, "Subject is required").max(120, "Subject is too long"),
+  topic: z.string().trim().min(2, "Topic is required").max(300, "Topic is too long"),
   academic_level: z.enum(["High School", "Bachelors", "Masters", "PhD"]),
   pages: z.number().min(1).max(50),
   words: z.number(),
-  deadline: z.string().min(1, "Deadline is required"),
-  description: z.string().min(10, "Please provide at least 10 characters"),
+  deadline: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Choose a valid deadline"),
+  description: z.string().trim().min(10, "Please provide at least 10 characters").max(10_000, "Instructions are too long"),
   // Online Class / Exam fields
   lms_platform: z.string().optional(),
   class_duration: z.string().optional(),
@@ -61,10 +61,18 @@ type OrderForm = z.infer<typeof orderSchema>;
 const LMS_PLATFORMS = ["Canvas", "Blackboard", "Moodle", "D2L", "Schoology", "Other"];
 const CLASS_DURATIONS = ["4 weeks", "8 weeks", "12 weeks", "Full Semester", "Other"];
 
+function utcDateInputValue(daysFromToday: number): string {
+  const date = new Date();
+  date.setUTCHours(0, 0, 0, 0);
+  date.setUTCDate(date.getUTCDate() + daysFromToday);
+  return date.toISOString().split("T")[0];
+}
+
 function OrderPageContent() {
   const [step, setStep] = useState(1);
   const [services, setServices] = useState<Service[]>([]);
   const [loadingServices, setLoadingServices] = useState(true);
+  const [serviceLoadError, setServiceLoadError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [livePrice, setLivePrice] = useState(0);
 
@@ -82,11 +90,7 @@ function OrderPageContent() {
       academic_level: "High School",
       pages: 1,
       words: 250,
-      deadline: (() => {
-        const d = new Date();
-        d.setDate(d.getDate() + 7);
-        return d.toISOString().split("T")[0];
-      })(),
+      deadline: utcDateInputValue(7),
       description: "",
       lms_platform: "",
       class_duration: "",
@@ -95,16 +99,22 @@ function OrderPageContent() {
     },
   });
 
-  const { watch, setValue, formState: { errors } } = form;
+  const { watch, setValue, setError, clearErrors, formState: { errors } } = form;
   const watchedValues = watch();
 
   // Fetch services
   useEffect(() => {
     async function loadServices() {
-      const { data } = await supabase
+      setServiceLoadError("");
+      const { data, error } = await supabase
         .from("services")
         .select("*")
         .order("created_at", { ascending: true });
+      if (error) {
+        setServiceLoadError("Services could not be loaded. Refresh the page and try again.");
+        setLoadingServices(false);
+        return;
+      }
       if (data) {
         const svcs: Service[] = data.map((s) => ({
           ...s,
@@ -135,11 +145,19 @@ function OrderPageContent() {
       setLivePrice(0);
       return;
     }
+    const isSpecial = service.service_type === "ONLINE_CLASS" || service.service_type === "ONLINE_EXAM";
+    const pricingDeadline = service.service_type === "ONLINE_EXAM"
+      ? watchedValues.exam_date
+      : watchedValues.deadline;
+    if (!pricingDeadline) {
+      setLivePrice(0);
+      return;
+    }
     const price = calculatePrice(
       service.base_price,
-      watchedValues.pages,
-      watchedValues.deadline,
-      watchedValues.academic_level
+      isSpecial ? 1 : watchedValues.pages,
+      pricingDeadline,
+      isSpecial ? "High School" : watchedValues.academic_level
     );
     setLivePrice(price);
   }, [services, watchedValues]);
@@ -155,12 +173,8 @@ function OrderPageContent() {
   };
 
   // Tomorrow min date
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const minDate = tomorrow.toISOString().split("T")[0];
-  const maxDate = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000)
-    .toISOString()
-    .split("T")[0];
+  const minDate = utcDateInputValue(1);
+  const maxDate = utcDateInputValue(60);
 
   const selectedService = services.find((s) => s.id === watchedValues.service_id);
   const serviceType: ServiceType = (selectedService as Record<string, unknown> | undefined)?.service_type as ServiceType || "STANDARD";
@@ -171,18 +185,43 @@ function OrderPageContent() {
   const handleNext = async () => {
     let fieldsToValidate: (keyof OrderForm)[] = [];
     if (step === 1) {
+      clearErrors(["lms_platform", "class_duration", "exam_date"]);
       fieldsToValidate = ["service_id", "subject", "topic", "academic_level"];
       if (isOnlineClass) {
         fieldsToValidate = [...fieldsToValidate, "lms_platform", "class_duration"];
+        if (!watchedValues.lms_platform) {
+          setError("lms_platform", { message: "Select your LMS platform" });
+          return;
+        }
+        if (!watchedValues.class_duration) {
+          setError("class_duration", { message: "Select the class duration" });
+          return;
+        }
       }
       if (isOnlineExam) {
         fieldsToValidate = [...fieldsToValidate, "lms_platform", "exam_date"];
+        if (!watchedValues.lms_platform) {
+          setError("lms_platform", { message: "Select the exam platform" });
+          return;
+        }
+        if (!watchedValues.exam_date) {
+          setError("exam_date", { message: "Select the exam date" });
+          return;
+        }
+        if (watchedValues.exam_date < minDate || watchedValues.exam_date > maxDate) {
+          setError("exam_date", { message: "Choose an exam date within the next 60 days" });
+          return;
+        }
       }
     } else if (step === 2) {
       if (isSpecialService) {
         fieldsToValidate = ["description"];
       } else {
         fieldsToValidate = ["pages", "deadline", "description"];
+        if (watchedValues.deadline < minDate || watchedValues.deadline > maxDate) {
+          setError("deadline", { message: "Choose a deadline within the next 60 days" });
+          return;
+        }
       }
     }
 
@@ -195,24 +234,38 @@ function OrderPageContent() {
   const handleBack = () => setStep((s) => Math.max(s - 1, 1));
 
   const onSubmit = async (data: OrderForm) => {
+    if (submitting) return;
     setSubmitting(true);
-    const result = await createOrderAction(data);
+    try {
+      const result = await createOrderAction(data);
+      if (!result.success || !result.orderId) {
+        if (result.field && result.field in form.getValues()) {
+          const field = result.field as keyof OrderForm;
+          setError(field, { message: result.error || "Check this field" });
+          setStep(["description", "pages", "deadline"].includes(field) ? 2 : 1);
+        }
+        toast({
+          variant: "destructive",
+          title: "Order failed",
+          description: result.error || "The order could not be created.",
+        });
+        setSubmitting(false);
+        return;
+      }
 
-    if (!result.success || !result.orderId) {
+      toast({
+        title: "Order placed!",
+        description: "Your order has been created with a server-verified price.",
+      });
+      router.push(`/checkout/${result.orderId}`);
+    } catch {
       toast({
         variant: "destructive",
         title: "Order failed",
-        description: result.error || "The order could not be created.",
+        description: "We could not connect to the order service. Please try again.",
       });
       setSubmitting(false);
-      return;
     }
-
-    toast({
-      title: "Order placed!",
-      description: "Your order has been created with a server-verified price.",
-    });
-    router.push(`/checkout/${result.orderId}`);
   };
 
   if (loadingServices) {
@@ -283,6 +336,9 @@ function OrderPageContent() {
                 </Select>
                 {errors.service_id && (
                   <p className="text-sm text-red-500">{errors.service_id.message}</p>
+                )}
+                {serviceLoadError && (
+                  <p className="text-sm text-red-500">{serviceLoadError}</p>
                 )}
               </div>
 
@@ -409,6 +465,9 @@ function OrderPageContent() {
                         ))}
                       </SelectContent>
                     </Select>
+                    {errors.lms_platform && (
+                      <p className="text-sm text-red-500">{errors.lms_platform.message}</p>
+                    )}
                   </div>
 
                   {/* Exam Date */}
@@ -418,6 +477,7 @@ function OrderPageContent() {
                       id="exam_date"
                       type="date"
                       min={minDate}
+                      max={maxDate}
                       {...form.register("exam_date")}
                     />
                     {errors.exam_date && (

@@ -8,8 +8,9 @@ export async function proxy(request: NextRequest) {
   const response = await updateSession(request);
   const isDashboard = pathname.startsWith("/dashboard");
   const isAdmin = pathname.startsWith("/admin");
+  const isCustomerFlow = pathname === "/order" || pathname.startsWith("/checkout/");
 
-  if (isDashboard || isAdmin) {
+  if (isDashboard || isAdmin || isCustomerFlow) {
     const supabase = createServerClient<Database>(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,

@@ -61,11 +61,38 @@ export default function LoginPage() {
     }
 
     if (authData.user) {
-      const { data: profile } = await supabase
+      let { data: profile } = await supabase
         .from("profiles")
         .select("role, is_banned")
         .eq("id", authData.user.id)
         .single<Pick<Profile, "role" | "is_banned">>();
+
+      if (!profile && authData.user.email) {
+        const fullName = typeof authData.user.user_metadata?.full_name === "string"
+          ? authData.user.user_metadata.full_name.trim().slice(0, 120)
+          : "Customer";
+        const { data: createdProfile } = await supabase
+          .from("profiles")
+          .insert({
+            id: authData.user.id,
+            email: authData.user.email,
+            full_name: fullName || "Customer",
+            role: "STUDENT",
+          })
+          .select("role, is_banned")
+          .single<Pick<Profile, "role" | "is_banned">>();
+        profile = createdProfile;
+      }
+
+      if (!profile) {
+        toast({
+          variant: "destructive",
+          title: "Account setup incomplete",
+          description: "We could not prepare your customer profile. Please try again or contact support.",
+        });
+        setLoading(false);
+        return;
+      }
 
       if (profile?.is_banned) {
         await supabase.auth.signOut();
@@ -147,7 +174,10 @@ export default function LoginPage() {
             </Button>
             <p className="text-sm text-muted-foreground text-center">
               Don&apos;t have an account?{" "}
-              <Link href="/register" className="text-primary hover:underline font-medium">
+              <Link
+                href={safeRedirect ? `/register?redirect=${encodeURIComponent(safeRedirect)}` : "/register"}
+                className="text-primary hover:underline font-medium"
+              >
                 Create one
               </Link>
             </p>
