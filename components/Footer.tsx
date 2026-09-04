@@ -16,8 +16,8 @@ export async function Footer() {
             NoveltyScholars
           </div>
           <p className="text-sm text-slate-400 leading-relaxed">
-            Professional academic writing services for students worldwide.
-            Essays, research papers, online classes, and exam help.
+            Ethical tutoring, research guidance and editorial support for UK
+            and US students, with secure USD checkout.
           </p>
         </div>
 
@@ -39,12 +39,12 @@ export async function Footer() {
             </li>
             <li>
               <Link href="/services/take-my-online-class" className="hover:text-primary transition-colors">
-                Take My Online Class
+                Online Tutoring
               </Link>
             </li>
             <li>
               <Link href="/services/take-my-online-exam" className="hover:text-primary transition-colors">
-                Take My Online Exam
+                Exam Preparation
               </Link>
             </li>
             <li>
@@ -66,6 +66,9 @@ export async function Footer() {
             SUPPORT
           </h4>
           <ul className="space-y-2 text-sm text-slate-400">
+            <li><Link href="/faq" className="hover:text-primary transition-colors">FAQ</Link></li>
+            <li><Link href="/support" className="hover:text-primary transition-colors">Customer Support</Link></li>
+            <li><Link href="/refund-policy" className="hover:text-primary transition-colors">Refund Policy</Link></li>
             <li>
               <Link href="/privacy-policy" className="hover:text-primary transition-colors">
                 Privacy Policy
@@ -104,7 +107,7 @@ export async function Footer() {
               </a>
             </li>
             <li className="text-primary font-medium">
-              Available 24/7
+              Contact us before placing an order
             </li>
           </ul>
         </div>

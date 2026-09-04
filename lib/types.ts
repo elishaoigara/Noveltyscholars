@@ -27,7 +27,8 @@ export type OrderStatus =
   | "IN_PROGRESS"
   | "DELIVERED"
   | "COMPLETED"
-  | "REVISION";
+  | "REVISION"
+  | "CANCELLED";
 
 export type Order = {
   id: string;
@@ -49,8 +50,19 @@ export type Order = {
   discount_code: string | null;
   discount_amount: number;
   final_price: number | null;
+  promo_redeemed_at?: string | null;
   created_at: string;
   updated_at: string;
+};
+
+export type PaymentEvent = {
+  id: string;
+  reference: string | null;
+  event_type: string;
+  source: "initialize" | "callback" | "webhook" | "admin";
+  status: "INFO" | "SUCCESS" | "FAILED";
+  error_message: string | null;
+  created_at: string;
 };
 
 export type OrderFile = {
@@ -131,6 +143,7 @@ export type Payment = {
   channel: string | null;
   failure_reason: string | null;
   paid_at: string | null;
+  receipt_email_sent_at?: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -248,6 +261,12 @@ export type Database = {
             referencedColumns: ["id"];
           }
         ];
+      };
+      payment_events: {
+        Row: PaymentEvent;
+        Insert: Omit<PaymentEvent, "id" | "created_at">;
+        Update: Partial<Omit<PaymentEvent, "id" | "created_at">>;
+        Relationships: [];
       };
       site_settings: {
         Row: DbSiteSettings;

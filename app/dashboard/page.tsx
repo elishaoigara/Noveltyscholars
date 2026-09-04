@@ -15,6 +15,7 @@ const statusVariant: Record<OrderStatus, "warning" | "default" | "secondary" | "
   DELIVERED: "success",
   COMPLETED: "success",
   REVISION: "destructive",
+  CANCELLED: "secondary",
 };
 
 const statusLabel: Record<OrderStatus, string> = {
@@ -24,6 +25,7 @@ const statusLabel: Record<OrderStatus, string> = {
   DELIVERED: "Delivered",
   COMPLETED: "Completed",
   REVISION: "Revision",
+  CANCELLED: "Cancelled",
 };
 
 export default async function DashboardPage() {

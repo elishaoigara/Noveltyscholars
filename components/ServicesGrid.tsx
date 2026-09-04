@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Check } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, getServicePriceUnit } from "@/lib/utils";
 import type { Service } from "@/lib/types";
 
 interface ServicesGridProps {
@@ -29,7 +29,7 @@ export function ServicesGrid({ services }: ServicesGridProps) {
           <CardContent className="flex-1">
             <p className="text-2xl font-bold text-primary mb-4">
               {formatCurrency(service.base_price)}
-              <span className="text-sm font-normal text-muted-foreground"> / page</span>
+              <span className="text-sm font-normal text-muted-foreground"> / {getServicePriceUnit(service.service_type)}</span>
             </p>
             {service.features && service.features.length > 0 && (
               <ul className="space-y-2">

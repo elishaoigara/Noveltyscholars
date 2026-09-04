@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import type { ServiceType } from "@/lib/types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -55,4 +56,10 @@ export function formatDate(dateString: string): string {
     month: "short",
     day: "numeric",
   }).format(date);
+}
+
+export function getServicePriceUnit(serviceType: ServiceType): "page" | "class" | "exam" {
+  if (serviceType === "ONLINE_CLASS") return "class";
+  if (serviceType === "ONLINE_EXAM") return "exam";
+  return "page";
 }

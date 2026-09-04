@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, Suspense } from "react";
+import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -14,7 +14,7 @@ import {
   Upload,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { calculatePrice, formatCurrency } from "@/lib/utils";
+import { calculatePrice, formatCurrency, getServicePriceUnit } from "@/lib/utils";
 import { createOrderAction } from "./actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,6 +60,7 @@ type OrderForm = z.infer<typeof orderSchema>;
 
 const LMS_PLATFORMS = ["Canvas", "Blackboard", "Moodle", "D2L", "Schoology", "Other"];
 const CLASS_DURATIONS = ["4 weeks", "8 weeks", "12 weeks", "Full Semester", "Other"];
+const DRAFT_KEY = "noveltyscholars-order-draft-v1";
 
 function utcDateInputValue(daysFromToday: number): string {
   const date = new Date();
@@ -75,6 +76,8 @@ function OrderPageContent() {
   const [serviceLoadError, setServiceLoadError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [livePrice, setLivePrice] = useState(0);
+  const [draftSaved, setDraftSaved] = useState(false);
+  const restoredDraft = useRef(false);
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -101,6 +104,29 @@ function OrderPageContent() {
 
   const { watch, setValue, setError, clearErrors, formState: { errors } } = form;
   const watchedValues = watch();
+
+  useEffect(() => {
+    if (restoredDraft.current) return;
+    restoredDraft.current = true;
+    try {
+      const stored = window.localStorage.getItem(DRAFT_KEY);
+      if (stored) {
+        const draft = JSON.parse(stored) as Partial<OrderForm>;
+        for (const [key, value] of Object.entries(draft)) {
+          if (value !== undefined && key in form.getValues()) form.setValue(key as keyof OrderForm, value as never);
+        }
+      }
+    } catch { window.localStorage.removeItem(DRAFT_KEY); }
+  }, [form]);
+
+  useEffect(() => {
+    if (!restoredDraft.current) return;
+    const timer = window.setTimeout(() => {
+      window.localStorage.setItem(DRAFT_KEY, JSON.stringify(watchedValues));
+      setDraftSaved(true);
+    }, 500);
+    return () => window.clearTimeout(timer);
+  }, [watchedValues]);
 
   // Fetch services
   useEffect(() => {
@@ -257,6 +283,7 @@ function OrderPageContent() {
         title: "Order placed!",
         description: "Your order has been created with a server-verified price.",
       });
+      window.localStorage.removeItem(DRAFT_KEY);
       router.push(`/checkout/${result.orderId}`);
     } catch {
       toast({
@@ -299,6 +326,7 @@ function OrderPageContent() {
       </div>
 
       <form onSubmit={form.handleSubmit(onSubmit)}>
+        {draftSaved && <p className="mb-3 text-right text-xs text-muted-foreground">Draft saved on this device</p>}
         {/* Step 1: Service & Details */}
         {step === 1 && (
           <Card>
@@ -329,7 +357,7 @@ function OrderPageContent() {
                   <SelectContent>
                     {services.map((s) => (
                       <SelectItem key={s.id} value={s.id}>
-                        {s.name} - {formatCurrency(s.base_price)}/page
+                        {s.name} - {formatCurrency(s.base_price)}/{getServicePriceUnit(s.service_type)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -726,8 +754,7 @@ function OrderPageContent() {
                 </div>
                 {selectedService && (
                   <p className="text-xs text-muted-foreground mt-1">
-                    {formatCurrency(selectedService.base_price)}/page &times;{" "}
-                    {watchedValues.pages} pages
+                    {formatCurrency(selectedService.base_price)}/{getServicePriceUnit(selectedService.service_type)}{!isSpecialService && <> &times; {watchedValues.pages} pages</>}
                     {!isSpecialService && watchedValues.academic_level !== "High School" &&
                       ` (${watchedValues.academic_level} level)`}
                   </p>

@@ -18,6 +18,7 @@ const statusLabel: Record<OrderStatus, string> = {
   DELIVERED: "Delivered",
   COMPLETED: "Completed",
   REVISION: "Revision",
+  CANCELLED: "Cancelled",
 };
 
 export default async function StudentOrderDetailPage({

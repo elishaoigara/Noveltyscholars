@@ -224,7 +224,7 @@ export function ServicesManager() {
               <TableRow>
                 <TableHead>Service</TableHead>
                 <TableHead>Type</TableHead>
-                <TableHead>Price/page</TableHead>
+                <TableHead>Base price</TableHead>
                 <TableHead>Featured</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -313,7 +313,7 @@ export function ServicesManager() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="base_price">Base Price ($ per page) *</Label>
+                <Label htmlFor="base_price">Base Price (per page, class or exam) *</Label>
                 <Input id="base_price" ref={priceRef} type="number" min="1" step="0.01" placeholder="15.00" />
               </div>
 

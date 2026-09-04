@@ -5,6 +5,7 @@ import { z } from "zod";
 import { calculatePrice } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { sendNewOrderNotifications } from "@/lib/notifications";
 
 const orderInputSchema = z.object({
   service_id: z.string().uuid(),
@@ -171,6 +172,10 @@ export async function createOrderAction(input: CreateOrderInput): Promise<Create
     console.error("Order creation failed:", orderError);
     return { success: false, error: "The order could not be created. Please try again." };
   }
+
+  await sendNewOrderNotifications(order.id).catch((error) =>
+    console.error("New-order notifications failed:", error)
+  );
 
   return { success: true, orderId: order.id };
 }

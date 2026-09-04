@@ -32,6 +32,7 @@ const statusVariant: Record<OrderStatus, "warning" | "default" | "secondary" | "
   DELIVERED: "success",
   COMPLETED: "success",
   REVISION: "destructive",
+  CANCELLED: "secondary",
 };
 
 const statusLabel: Record<OrderStatus, string> = {
@@ -41,6 +42,7 @@ const statusLabel: Record<OrderStatus, string> = {
   DELIVERED: "Delivered",
   COMPLETED: "Completed",
   REVISION: "Revision",
+  CANCELLED: "Cancelled",
 };
 
 const ALL_STATUSES: OrderStatus[] = [
@@ -50,6 +52,7 @@ const ALL_STATUSES: OrderStatus[] = [
   "DELIVERED",
   "COMPLETED",
   "REVISION",
+  "CANCELLED",
 ];
 
 type OrderRow = Order & {

@@ -2,6 +2,8 @@ import { createHmac, timingSafeEqual } from "crypto";
 import { NextResponse } from "next/server";
 import { verifyPaystackTransaction } from "@/lib/paystack";
 import { createServiceClient } from "@/lib/supabase/service";
+import { logPaymentEvent } from "@/lib/payment-events";
+import { sendPaymentNotifications } from "@/lib/notifications";
 
 type PaystackWebhookEvent = {
   event?: string;
@@ -25,6 +27,7 @@ export async function POST(request: Request) {
   const signature = request.headers.get("x-paystack-signature");
 
   if (!hasValidSignature(rawBody, signature)) {
+    await logPaymentEvent({ eventType: "invalid_signature", source: "webhook", status: "FAILED", error: "Signature validation failed" });
     return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
   }
 
@@ -48,6 +51,7 @@ export async function POST(request: Request) {
     }
 
     if (payment.status === "SUCCESS") {
+      await sendPaymentNotifications(payment.reference).catch((error) => console.error("Receipt email failed:", error));
       return NextResponse.json({ received: true });
     }
 
@@ -59,6 +63,7 @@ export async function POST(request: Request) {
       transaction.currency.toUpperCase() === payment.currency.toUpperCase();
 
     if (!isValid) {
+      await logPaymentEvent({ reference: payment.reference, eventType: "verification_mismatch", source: "webhook", status: "FAILED", error: "Amount, currency, reference or status mismatch" });
       console.error("Paystack webhook verification mismatch", payment.reference);
       return NextResponse.json({ received: true, ignored: true });
     }
@@ -76,12 +81,17 @@ export async function POST(request: Request) {
     );
 
     if (completionError) {
+      await logPaymentEvent({ reference: payment.reference, eventType: "completion_failed", source: "webhook", status: "FAILED", error: completionError.message });
       console.error("Paystack webhook database error:", completionError);
       return NextResponse.json({ error: "Unable to record payment" }, { status: 500 });
     }
 
+    await logPaymentEvent({ reference: payment.reference, eventType: "payment_completed", source: "webhook", status: "SUCCESS" });
+    await sendPaymentNotifications(payment.reference).catch((error) => console.error("Receipt email failed:", error));
+
     return NextResponse.json({ received: true });
   } catch (error) {
+    await logPaymentEvent({ eventType: "handler_error", source: "webhook", status: "FAILED", error: error instanceof Error ? error.message : "Unknown webhook error" });
     console.error("Paystack webhook error:", error);
     return NextResponse.json({ error: "Webhook handler error" }, { status: 500 });
   }

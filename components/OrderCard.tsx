@@ -13,6 +13,7 @@ const statusVariant: Record<OrderStatus, "warning" | "default" | "secondary" | "
   DELIVERED: "success",
   COMPLETED: "success",
   REVISION: "destructive",
+  CANCELLED: "secondary",
 };
 
 const statusLabel: Record<OrderStatus, string> = {
@@ -22,6 +23,7 @@ const statusLabel: Record<OrderStatus, string> = {
   DELIVERED: "Delivered",
   COMPLETED: "Completed",
   REVISION: "Revision",
+  CANCELLED: "Cancelled",
 };
 
 interface OrderCardProps {
@@ -76,7 +78,8 @@ export function OrderCard({ order, showActions = true, adminView = false }: Orde
         </div>
 
         {showActions && (
-          <div className="mt-4 pt-3 border-t">
+          <div className="mt-4 pt-3 border-t grid gap-2">
+            {!adminView && order.status === "PENDING_PAYMENT" && <Button asChild size="sm"><Link href={`/checkout/${order.id}`}>Resume payment</Link></Button>}
             <Link href={detailUrl}>
               <Button variant="outline" size="sm" className="w-full">
                 View Details

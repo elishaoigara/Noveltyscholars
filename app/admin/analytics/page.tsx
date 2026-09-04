@@ -11,6 +11,7 @@ const STATUS_LABEL: Record<OrderStatus, string> = {
   DELIVERED: "Delivered",
   COMPLETED: "Completed",
   REVISION: "Revision",
+  CANCELLED: "Cancelled",
 };
 
 const STATUS_COLOR: Record<OrderStatus, string> = {
@@ -20,6 +21,7 @@ const STATUS_COLOR: Record<OrderStatus, string> = {
   DELIVERED: "bg-teal-400",
   COMPLETED: "bg-green-500",
   REVISION: "bg-red-400",
+  CANCELLED: "bg-slate-400",
 };
 
 function monthKey(date: Date) {

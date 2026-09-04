@@ -12,17 +12,19 @@ const STATUS_LABEL: Record<OrderStatus, string> = {
   DELIVERED: "Delivered",
   COMPLETED: "Completed",
   REVISION: "Revision",
+  CANCELLED: "Cancelled",
 };
 
 // Which statuses can move to which. Prevents accidental skips/regressions
 // (e.g. PENDING_PAYMENT -> COMPLETED, or COMPLETED -> PENDING_PAYMENT).
 const ALLOWED_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
-  PENDING_PAYMENT: ["PAID"],
+  PENDING_PAYMENT: ["PAID", "CANCELLED"],
   PAID: ["IN_PROGRESS", "PENDING_PAYMENT"],
   IN_PROGRESS: ["DELIVERED", "PAID"],
   DELIVERED: ["COMPLETED", "REVISION", "IN_PROGRESS"],
   REVISION: ["IN_PROGRESS", "DELIVERED"],
   COMPLETED: ["REVISION"],
+  CANCELLED: [],
 };
 
 async function applyStatusUpdate(

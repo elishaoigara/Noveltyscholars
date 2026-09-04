@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { initializePaystackTransaction, toPaystackSubunit } from "@/lib/paystack";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { logPaymentEvent } from "@/lib/payment-events";
 
 const DEFAULT_APP_URL = "https://noveltyscholars.vercel.app";
 const CURRENCY = "USD";
@@ -39,7 +40,7 @@ export async function POST(request: Request) {
     const serviceClient = createServiceClient();
     const { data: order, error: orderError } = await serviceClient
       .from("orders")
-      .select("id, order_code, user_id, total_price, final_price, status")
+      .select("id, order_code, user_id, total_price, final_price, status, discount_code")
       .eq("id", body.orderId)
       .eq("user_id", user.id)
       .single();
@@ -58,7 +59,17 @@ export async function POST(request: Request) {
       );
     }
 
-    const payableAmount = order.final_price ?? order.total_price;
+    let payableAmount = order.final_price ?? order.total_price;
+    if (order.discount_code) {
+      const { data: promo } = await serviceClient.from("promo_codes").select("discount_type,discount_value,max_uses,used_count,min_order_amount,expires_at,is_active").eq("code", order.discount_code).maybeSingle();
+      const usable = promo?.is_active && promo.used_count < promo.max_uses && order.total_price >= promo.min_order_amount && (!promo.expires_at || new Date(promo.expires_at) > new Date());
+      if (!usable) return NextResponse.json({ success: false, error: "Your promo code is no longer valid. Remove it and try again." }, { status: 409 });
+      const discount = promo.discount_type === "PERCENTAGE" ? Math.round(order.total_price * Math.min(promo.discount_value, 100) / 100) : Math.min(promo.discount_value, order.total_price);
+      payableAmount = Math.max(1, order.total_price - discount);
+      if (payableAmount !== order.final_price) {
+        await serviceClient.from("orders").update({ discount_amount: discount, final_price: payableAmount }).eq("id", order.id);
+      }
+    }
     const expectedAmount = toPaystackSubunit(payableAmount);
 
     const { data: activePayment } = await serviceClient
@@ -79,6 +90,7 @@ export async function POST(request: Request) {
       activePayment.authorization_url &&
       activePaymentAgeMs < 10 * 60 * 1000
     ) {
+      await logPaymentEvent({ reference: activePayment.reference, eventType: "checkout_resumed", source: "initialize", status: "INFO" });
       return NextResponse.json({
         success: true,
         authorizationUrl: activePayment.authorization_url,
@@ -172,6 +184,8 @@ export async function POST(request: Request) {
         throw new Error("Unable to save Paystack transaction");
       }
 
+      await logPaymentEvent({ reference, eventType: "checkout_initialized", source: "initialize", status: "SUCCESS" });
+
       return NextResponse.json({
         success: true,
         authorizationUrl: transaction.authorization_url,
@@ -187,6 +201,7 @@ export async function POST(request: Request) {
           updated_at: new Date().toISOString(),
         })
         .eq("reference", reference);
+      await logPaymentEvent({ reference, eventType: "initialization_failed", source: "initialize", status: "FAILED", error: message });
       throw error;
     }
   } catch (error) {

@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { RotateCcw, CheckCircle2, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { RotateCcw, CheckCircle2, Loader2, CreditCard, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { updateStudentOrderStatus } from "./actions";
+import { cancelUnpaidOrder, updateStudentOrderStatus } from "./actions";
 
 interface StudentOrderActionsProps {
   orderId: string;
@@ -50,11 +51,16 @@ export function StudentOrderActions({
 
   if (orderStatus === "PENDING_PAYMENT") {
     return (
-      <div className="text-center text-sm text-muted-foreground py-4">
-        Complete payment to unlock more actions.
+      <div className="flex flex-col sm:flex-row gap-3">
+        <Button asChild className="gap-2"><Link href={`/checkout/${orderId}`}><CreditCard className="h-4 w-4" />Resume payment</Link></Button>
+        <Button variant="outline" className="gap-2" disabled={loading !== null} onClick={async () => { if (!window.confirm("Cancel this unpaid order?")) return; setLoading("CANCELLED"); const result = await cancelUnpaidOrder(orderId); setLoading(null); if (!result.success) toast({ variant: "destructive", title: "Cancellation failed", description: result.error }); else { toast({ title: "Order cancelled" }); router.refresh(); } }}>
+          {loading === "CANCELLED" ? <Loader2 className="h-4 w-4 animate-spin" /> : <XCircle className="h-4 w-4" />}Cancel unpaid order
+        </Button>
       </div>
     );
   }
+
+  if (orderStatus === "CANCELLED") return <p className="text-sm text-muted-foreground">This unpaid order was cancelled.</p>;
 
   return (
     <div className="flex flex-col sm:flex-row gap-3">

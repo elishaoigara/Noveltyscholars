@@ -53,3 +53,18 @@ export async function updateStudentOrderStatus(
   revalidatePath(`/dashboard/orders/${order.id}`);
   return { success: true };
 }
+
+export async function cancelUnpaidOrder(orderId: string): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: "You must be signed in." };
+  const db = createServiceClient();
+  const { data: order } = await db.from("orders").select("id,status").eq("id", orderId).eq("user_id", user.id).single();
+  if (!order) return { success: false, error: "Order not found." };
+  if (order.status !== "PENDING_PAYMENT") return { success: false, error: "Only unpaid orders can be cancelled." };
+  const { data: updated } = await db.from("orders").update({ status: "CANCELLED", updated_at: new Date().toISOString() }).eq("id", order.id).eq("status", "PENDING_PAYMENT").select("id").maybeSingle();
+  if (!updated) return { success: false, error: "This order changed before it could be cancelled." };
+  await db.from("payments").update({ status: "FAILED", failure_reason: "Order cancelled by customer", updated_at: new Date().toISOString() }).eq("order_id", order.id).in("status", ["INITIALIZED", "PENDING"]);
+  revalidatePath("/dashboard"); revalidatePath(`/dashboard/orders/${order.id}`);
+  return { success: true };
+}

@@ -21,6 +21,7 @@ const statusLabel: Record<OrderStatus, string> = {
   DELIVERED: "Delivered",
   COMPLETED: "Completed",
   REVISION: "Revision",
+  CANCELLED: "Cancelled",
 };
 
 interface AdminStatusDropdownProps {
@@ -66,6 +67,7 @@ export function AdminStatusDropdown({
     "DELIVERED",
     "COMPLETED",
     "REVISION",
+    "CANCELLED",
   ];
 
   return (

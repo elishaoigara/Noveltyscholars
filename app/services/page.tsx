@@ -9,14 +9,14 @@ import { ServicesGrid } from "@/components/ServicesGrid";
 import type { Service } from "@/lib/types";
 
 const servicesList = [
-  { icon: PenTool, title: "Essays", desc: "We provide essays to students at all grade levels on any subject. Each essay is completely original and written according to your specifications." },
-  { icon: FileText, title: "Research Papers", desc: "Our highly qualified writers are ready to assist you with any research paper, regardless of difficulty or subject matter." },
-  { icon: Briefcase, title: "Resume and CV", desc: "Our writing partners know what it takes to move up the career ladder. They can write or edit a resume or CV that helps get you to the top." },
-  { icon: Monitor, title: "Online Classes", desc: "We connect you with a capable expert who handles your entire online course effectively from start to finish." },
-  { icon: BookMarked, title: "Scholarship & Admission Essays", desc: "Compelling written products that can get you into a prestigious institution and secure the funds you need to stay there." },
-  { icon: GraduationCap, title: "Thesis and Dissertation", desc: "PhD consultants in all fields partner with graduate students to assist them with their capstone projects from start to finish." },
-  { icon: FileCheck, title: "Term Papers", desc: "We write custom term papers that impress your instructor with your mastery of the subject matter." },
-  { icon: BookOpen, title: "Copy Writing", desc: "Whether you need web content, product descriptions, blog posts, or press releases, count on us for all your business writing needs." },
+  { icon: PenTool, title: "Essay Coaching", desc: "Structure, argument and draft feedback that preserves your ideas and voice." },
+  { icon: FileText, title: "Research Guidance", desc: "Source evaluation, outline planning and editorial support for research papers." },
+  { icon: Briefcase, title: "CV & Resume Editing", desc: "Clear, role-focused feedback for UK CVs and US resumes." },
+  { icon: Monitor, title: "Online Tutoring", desc: "Live concept review and study planning without sharing account access." },
+  { icon: BookMarked, title: "Application Review", desc: "Voice-preserving feedback for UCAS and US college personal statements." },
+  { icon: GraduationCap, title: "Thesis Guidance", desc: "Milestone support for proposals, methods, literature reviews and editing." },
+  { icon: FileCheck, title: "Proofreading", desc: "Language, clarity, citation and consistency checks for your completed draft." },
+  { icon: BookOpen, title: "Citation Support", desc: "APA, MLA, Chicago, Harvard and OSCOLA reference checks." },
 ];
 
 export default async function ServicesPage() {
@@ -29,7 +29,7 @@ export default async function ServicesPage() {
       <div className="text-center mb-10 sm:mb-12">
         <h1 className="text-3xl md:text-4xl font-bold mb-4">Our Services</h1>
         <p className="text-base sm:text-lg text-body max-w-2xl mx-auto">
-          Expert academic support tailored to your needs — from essays and research papers to full online class and exam assistance.
+          Ethical academic support tailored to UK and US conventions—from focused editing to live tutoring and exam preparation.
         </p>
       </div>
 
@@ -45,15 +45,15 @@ export default async function ServicesPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-12 sm:mb-16">
         <div className="bg-primary rounded-2xl p-6 sm:p-8 text-white space-y-4">
-          <h2 className="text-xl sm:text-2xl font-bold">Take My Online Class</h2>
-          <p className="text-white/80">Can&apos;t manage work, life, and class at the same time? We connect you with an expert who handles your entire course.</p>
+          <h2 className="text-xl sm:text-2xl font-bold">Online Tutoring</h2>
+          <p className="text-white/80">Work through difficult concepts, drafts and study plans with focused one-to-one support.</p>
           <Link href="/services/take-my-online-class">
             <Button variant="secondary" className="gap-2 bg-white text-primary hover:bg-gray-100 w-full sm:w-auto">Learn More <ArrowRight className="h-4 w-4" /></Button>
           </Link>
         </div>
         <div className="bg-slate-800 dark:bg-slate-900 rounded-2xl p-6 sm:p-8 text-white space-y-4">
-          <h2 className="text-xl sm:text-2xl font-bold">Take My Online Exam</h2>
-          <p className="text-slate-300">Our exam specialists will complete your online exam on your behalf and aim for the grade you need.</p>
+          <h2 className="text-xl sm:text-2xl font-bold">Exam Preparation</h2>
+          <p className="text-slate-300">Build a revision plan, practise question strategy and close knowledge gaps before the assessment.</p>
           <Link href="/services/take-my-online-exam">
             <Button variant="outline" className="gap-2 border-white text-white hover:bg-white hover:text-slate-800 w-full sm:w-auto">Learn More <ArrowRight className="h-4 w-4" /></Button>
           </Link>

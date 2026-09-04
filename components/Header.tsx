@@ -11,8 +11,8 @@ import type { Profile } from "@/lib/types";
 const NAV_LINKS = [
   { href: "/", label: "Home" },
   { href: "/services", label: "Our Services" },
-  { href: "/services/take-my-online-class", label: "Take My Online Class" },
-  { href: "/services/take-my-online-exam", label: "Take My Online Exam" },
+  { href: "/services/take-my-online-class", label: "Online Tutoring" },
+  { href: "/services/take-my-online-exam", label: "Exam Preparation" },
 ];
 
 export function Header() {

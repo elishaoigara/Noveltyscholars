@@ -21,9 +21,9 @@ export const metadata: Metadata = {
     template: "%s | NoveltyScholars",
   },
   description:
-    "Professional academic writing service. Essays, research papers, online class help, and online exam help. Plagiarism-free, on time, 24/7 support.",
+    "Ethical tutoring, research guidance and editorial support for UK and US students, with secure USD checkout.",
   keywords:
-    "assignment help, take my online class, take my online exam, essay writing service, research paper help, homework help",
+    "online tutoring, exam preparation, academic editing, dissertation guidance, UK student support, US student support",
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },

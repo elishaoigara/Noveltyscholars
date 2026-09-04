@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { verifyPaystackTransaction } from "@/lib/paystack";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { logPaymentEvent } from "@/lib/payment-events";
+import { sendPaymentNotifications } from "@/lib/notifications";
 
 export async function GET(request: Request) {
   try {
@@ -41,6 +43,7 @@ export async function GET(request: Request) {
     }
 
     if (payment.status === "SUCCESS") {
+      await sendPaymentNotifications(reference).catch((error) => console.error("Receipt email failed:", error));
       return NextResponse.json({ success: true, orderId: payment.order_id });
     }
 
@@ -52,6 +55,7 @@ export async function GET(request: Request) {
       transaction.currency.toUpperCase() === payment.currency.toUpperCase();
 
     if (!isValid) {
+      await logPaymentEvent({ reference, eventType: "verification_pending", source: "callback", status: "INFO" });
       return NextResponse.json(
         { success: false, pending: true, error: "Payment has not been confirmed" },
         { status: 409 }
@@ -71,6 +75,7 @@ export async function GET(request: Request) {
     );
 
     if (completionError) {
+      await logPaymentEvent({ reference, eventType: "completion_failed", source: "callback", status: "FAILED", error: completionError.message });
       console.error("Failed to complete verified payment:", completionError);
       return NextResponse.json(
         { success: false, error: "Payment was verified but could not be recorded" },
@@ -78,7 +83,10 @@ export async function GET(request: Request) {
       );
     }
 
-    return NextResponse.json({ success: true, orderId: orderId || payment.order_id });
+    await logPaymentEvent({ reference, eventType: "payment_completed", source: "callback", status: "SUCCESS" });
+    await sendPaymentNotifications(reference).catch((error) => console.error("Receipt email failed:", error));
+
+    return NextResponse.json({ success: true, orderId: orderId || payment.order_id, reference });
   } catch (error) {
     console.error("Paystack verification error:", error);
     return NextResponse.json(

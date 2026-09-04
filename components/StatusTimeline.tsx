@@ -25,6 +25,9 @@ interface StatusTimelineProps {
 }
 
 export function StatusTimeline({ currentStatus }: StatusTimelineProps) {
+  if (currentStatus === "CANCELLED") {
+    return <div className="rounded-xl border bg-muted/40 p-4 text-center text-sm text-muted-foreground">This unpaid order was cancelled.</div>;
+  }
   const effectiveStatus: OrderStatus =
     currentStatus === "REVISION" ? "DELIVERED" : currentStatus;
 

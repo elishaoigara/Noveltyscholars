@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, FileText, Settings, Tag, Users, BarChart3, SlidersHorizontal, LogOut } from "lucide-react";
+import { LayoutDashboard, FileText, Settings, Tag, Users, BarChart3, SlidersHorizontal, LogOut, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { signOutAction } from "./actions";
@@ -10,6 +10,7 @@ import { signOutAction } from "./actions";
 const NAV_ITEMS = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/orders", label: "Orders", icon: FileText },
+  { href: "/admin/payments", label: "Payments", icon: CreditCard },
   { href: "/admin/users", label: "Customers", icon: Users },
   { href: "/admin/services", label: "Services", icon: Settings },
   { href: "/admin/promo-codes", label: "Promo Codes", icon: Tag },

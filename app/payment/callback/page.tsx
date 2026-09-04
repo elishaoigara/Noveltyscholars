@@ -91,9 +91,7 @@ function PaymentCallbackContent() {
         </CardContent>
         <CardFooter className="flex-col justify-center gap-3 sm:flex-row">
           {state === "success" && orderId ? (
-            <Button asChild>
-              <Link href={`/dashboard/orders/${orderId}`}>View order</Link>
-            </Button>
+            <><Button asChild><Link href={`/dashboard/orders/${orderId}`}>View order</Link></Button>{reference&&<Button asChild variant="outline"><Link href={`/dashboard/receipts/${encodeURIComponent(reference)}`}>View receipt</Link></Button>}</>
           ) : state !== "verifying" ? (
             <Button onClick={verifyPayment} className="gap-2">
               <RefreshCw className="h-4 w-4" /> Try verification again

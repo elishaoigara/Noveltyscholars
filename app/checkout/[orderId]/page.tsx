@@ -10,6 +10,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription }
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import type { Order, Profile } from "@/lib/types";
+import { CheckoutPromo } from "./CheckoutPromo";
 
 export default function CheckoutPage() {
   const { orderId } = useParams<{ orderId: string }>();
@@ -156,6 +157,9 @@ export default function CheckoutPage() {
               </p>
             </div>
           </div>
+        </CardContent>
+        <CardContent className="pt-0">
+          <CheckoutPromo orderId={order.id} initialCode={order.discount_code} onApplied={(finalPrice, discount, code) => setOrder((current) => current ? { ...current, final_price: finalPrice, discount_amount: discount, discount_code: code } : current)} />
         </CardContent>
         <CardFooter className="flex-col gap-3 border-t pt-6">
           <Button

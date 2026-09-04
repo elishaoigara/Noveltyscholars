@@ -19,6 +19,7 @@ const statusLabel: Record<OrderStatus, string> = {
   DELIVERED: "Delivered",
   COMPLETED: "Completed",
   REVISION: "Revision",
+  CANCELLED: "Cancelled",
 };
 
 const statusVariant: Record<OrderStatus, "warning" | "default" | "secondary" | "success" | "destructive"> = {
@@ -28,6 +29,7 @@ const statusVariant: Record<OrderStatus, "warning" | "default" | "secondary" | "
   DELIVERED: "success",
   COMPLETED: "success",
   REVISION: "destructive",
+  CANCELLED: "secondary",
 };
 
 export default async function AdminOrderDetailPage({

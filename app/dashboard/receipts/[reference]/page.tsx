@@ -1,0 +1,11 @@
+import { notFound, redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
+import { formatCurrency, formatDate } from "@/lib/utils";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PrintReceiptButton } from "./PrintReceiptButton";
+export default async function ReceiptPage({params}:{params:Promise<{reference:string}>}){
+ const {reference}=await params; const auth=await createClient(); const {data:{user}}=await auth.auth.getUser(); if(!user)redirect("/login"); const db=createServiceClient();
+ const {data:p}=await db.from("payments").select("*").eq("reference",decodeURIComponent(reference)).single(); if(!p||p.status!=="SUCCESS")notFound(); const {data:profile}=await db.from("profiles").select("role,email,full_name").eq("id",user.id).single(); if(p.user_id!==user.id&&profile?.role!=="ADMIN")notFound(); const {data:o}=await db.from("orders").select("order_code,subject").eq("id",p.order_id).single();
+ return <div className="container max-w-2xl py-12"><Card><CardHeader><div className="flex justify-between gap-4"><div><p className="text-primary font-bold">NoveltyScholars</p><CardTitle>Payment receipt</CardTitle></div><PrintReceiptButton/></div></CardHeader><CardContent className="space-y-4"><div className="rounded-xl bg-emerald-50 dark:bg-emerald-950/30 p-5"><p className="text-sm text-muted-foreground">Amount paid</p><p className="text-3xl font-bold">{formatCurrency((p.amount_paid??p.expected_amount)/100)} USD</p></div><dl className="grid gap-3 sm:grid-cols-2"><div><dt className="text-muted-foreground">Order</dt><dd>{o?.order_code}</dd></div><div><dt className="text-muted-foreground">Customer</dt><dd>{profile?.full_name||profile?.email}</dd></div><div><dt className="text-muted-foreground">Reference</dt><dd className="break-all font-mono text-xs">{p.reference}</dd></div><div><dt className="text-muted-foreground">Paid</dt><dd>{formatDate(p.paid_at||p.updated_at)}</dd></div><div><dt className="text-muted-foreground">Channel</dt><dd>{p.channel||"Paystack"}</dd></div><div><dt className="text-muted-foreground">Status</dt><dd>Successful</dd></div></dl></CardContent></Card></div>;
+}
