@@ -30,13 +30,17 @@ export async function GET(request: Request) {
           const metadataName = typeof user.user_metadata?.full_name === "string"
             ? user.user_metadata.full_name.trim().slice(0, 120)
             : "Customer";
-          await serviceClient.from("profiles").insert({
+          const { error: profileError } = await serviceClient.from("profiles").insert({
             id: user.id,
             email: user.email,
             full_name: metadataName || "Customer",
             role: "STUDENT",
             is_banned: false,
           });
+          if (profileError) {
+            console.error("Failed to create profile after email confirmation", profileError);
+            return NextResponse.redirect(`${origin}/login?error=profile_setup_failed`);
+          }
         }
       }
       return NextResponse.redirect(`${origin}${next}`);

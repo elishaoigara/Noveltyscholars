@@ -50,63 +50,70 @@ export default function RegisterPage() {
 
   const onSubmit = async (data: RegisterForm) => {
     setLoading(true);
-    const { data: authData, error } = await supabase.auth.signUp({
-      email: data.email,
-      password: data.password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(safeRedirect)}`,
-        data: {
-          full_name: data.full_name,
+    try {
+      const { data: authData, error } = await supabase.auth.signUp({
+        email: data.email.trim(),
+        password: data.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(safeRedirect)}`,
+          data: {
+            full_name: data.full_name.trim(),
+          },
         },
-      },
-    });
+      });
 
-    if (error) {
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Registration failed",
+          description: error.message,
+        });
+        return;
+      }
+
+      if (authData.user && authData.session) {
+        // When email confirmation is disabled, a session exists immediately.
+        // Confirmed-email signups create their profile in /auth/callback instead.
+        const { data: existingProfile, error: profileLookupError } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("id", authData.user.id)
+          .maybeSingle();
+        if (profileLookupError) {
+          throw profileLookupError;
+        }
+
+        const { error: profileError } = existingProfile
+          ? { error: null }
+          : await supabase.from("profiles").insert({
+              id: authData.user.id,
+              email: data.email.trim(),
+              full_name: data.full_name.trim(),
+              role: "STUDENT",
+            });
+
+        if (profileError) {
+          throw profileError;
+        }
+      }
+
+      if (authData.session) {
+        router.push(safeRedirect);
+        router.refresh();
+        return;
+      }
+
+      setSuccess(true);
+    } catch (caughtError) {
+      const message = caughtError instanceof Error ? caughtError.message : "Please try again.";
       toast({
         variant: "destructive",
         title: "Registration failed",
-        description: error.message,
+        description: message,
       });
+    } finally {
       setLoading(false);
-      return;
     }
-
-    if (authData.user && authData.session) {
-      // When email confirmation is disabled, a session exists immediately.
-      // Confirmed-email signups create their profile in /auth/callback instead.
-      const { data: existingProfile } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("id", authData.user.id)
-        .maybeSingle();
-      const { error: profileError } = existingProfile
-        ? { error: null }
-        : await supabase.from("profiles").insert({
-            id: authData.user.id,
-            email: data.email,
-            full_name: data.full_name,
-            role: "STUDENT",
-          });
-
-      if (profileError) {
-        toast({
-          variant: "destructive",
-          title: "Profile creation failed",
-          description: profileError.message,
-        });
-        setLoading(false);
-        return;
-      }
-    }
-
-    if (authData.session) {
-      router.push(safeRedirect);
-      router.refresh();
-      return;
-    }
-
-    setSuccess(true);
-    setLoading(false);
   };
 
   if (success) {

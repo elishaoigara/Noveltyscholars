@@ -30,6 +30,7 @@ export default function LoginPage() {
   const { toast } = useToast();
 
   const wasBanned = searchParams.get("banned") === "1";
+  const setupFailed = searchParams.get("error") === "profile_setup_failed";
   const requestedRedirect = searchParams.get("redirect");
   const safeRedirect = requestedRedirect?.startsWith("/") && !requestedRedirect.startsWith("//")
     ? requestedRedirect
@@ -134,6 +135,13 @@ export default function LoginPage() {
           <div className="mx-6 mb-2 flex items-start gap-2 rounded-lg border border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-950/30 p-3 text-sm text-red-700 dark:text-red-400">
             <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
             <span>This account has been suspended. Contact support if you believe this is a mistake.</span>
+          </div>
+        )}
+
+        {setupFailed && (
+          <div className="mx-6 mb-2 flex items-start gap-2 rounded-lg border border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-950/30 p-3 text-sm text-red-700 dark:text-red-400">
+            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+            <span>Your account was confirmed, but setup did not finish. Please try signing in again or contact support.</span>
           </div>
         )}
 
