@@ -1,6 +1,6 @@
 import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
-import { initializePaystackTransaction, toPaystackSubunit } from "@/lib/paystack";
+import { getSecretKey, PaystackError, initializePaystackTransaction, toPaystackSubunit } from "@/lib/paystack";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { logPaymentEvent } from "@/lib/payment-events";
@@ -37,6 +37,11 @@ export async function POST(request: Request) {
       );
     }
 
+    // Validate before reserving an active payment attempt.
+    getSecretKey();
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()) {
+      throw new PaystackError("Payments are not configured correctly. Please contact support.", "PAYMENT_CONFIGURATION", 503);
+    }
     const serviceClient = createServiceClient();
     const { data: order, error: orderError } = await serviceClient
       .from("orders")
@@ -165,7 +170,7 @@ export async function POST(request: Request) {
       const authorizationUrl = new URL(transaction.authorization_url);
       if (
         authorizationUrl.protocol !== "https:" ||
-        !authorizationUrl.hostname.endsWith("paystack.com")
+        !(authorizationUrl.hostname === "paystack.com" || authorizationUrl.hostname.endsWith(".paystack.com"))
       ) {
         throw new Error("Paystack returned an invalid checkout URL");
       }
@@ -207,8 +212,12 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Paystack initialization error:", error);
     return NextResponse.json(
-      { success: false, error: "Unable to initialize payment. Please try again." },
-      { status: 500 }
+      {
+        success: false,
+        error: error instanceof PaystackError ? error.message : "Unable to initialize payment. Please contact support with your order number.",
+        code: error instanceof PaystackError ? error.code : "PAYMENT_INITIALIZATION_FAILED",
+      },
+      { status: error instanceof PaystackError ? error.status : 500 }
     );
   }
 }
