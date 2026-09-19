@@ -1,6 +1,7 @@
 "use server";
 
 import { z } from "zod";
+import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 
 const promoInputSchema = z.object({
@@ -17,6 +18,12 @@ export async function validatePromoCodeAction(code: string, orderTotal: number):
   const parsed = promoInputSchema.safeParse({ code, orderTotal });
   if (!parsed.success) {
     return { valid: false, discountAmount: 0, finalPrice: orderTotal, error: "Invalid promo code" };
+  }
+
+  const auth = await createClient();
+  const { data: { user } } = await auth.auth.getUser();
+  if (!user) {
+    return { valid: false, discountAmount: 0, finalPrice: orderTotal, error: "Sign in to validate a promo code" };
   }
 
   const supabase = createServiceClient();
@@ -40,11 +47,11 @@ export async function validatePromoCodeAction(code: string, orderTotal: number):
   }
 
   const discountAmount = promoCode.discount_type === "PERCENTAGE"
-    ? Math.round(orderTotal * (promoCode.discount_value / 100))
-    : Math.min(promoCode.discount_value, orderTotal);
+    ? Math.round(parsed.data.orderTotal * (Math.min(promoCode.discount_value, 100) / 100))
+    : Math.min(promoCode.discount_value, parsed.data.orderTotal);
   return {
     valid: true,
     discountAmount,
-    finalPrice: Math.max(0, orderTotal - discountAmount),
+    finalPrice: Math.max(0, parsed.data.orderTotal - discountAmount),
   };
 }
