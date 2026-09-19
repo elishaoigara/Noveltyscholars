@@ -8,7 +8,7 @@ import { sendPaymentNotifications } from "@/lib/notifications";
 export async function GET(request: Request) {
   try {
     const reference = new URL(request.url).searchParams.get("reference")?.trim();
-    if (!reference) {
+    if (!reference || !/^[A-Za-z0-9._-]{1,160}$/.test(reference)) {
       return NextResponse.json(
         { success: false, error: "Payment reference is required" },
         { status: 400 }
