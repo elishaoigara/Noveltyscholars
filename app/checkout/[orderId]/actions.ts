@@ -5,6 +5,8 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 
 export async function applyPromoCode(orderId: string, rawCode: string) {
+  if (typeof orderId !== "string" || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(orderId)) return { success: false, error: "Order not found." };
+  if (typeof rawCode !== "string" || rawCode.length > 40) return { success: false, error: "Invalid promo code." };
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, error: "Sign in to apply a promo code." };

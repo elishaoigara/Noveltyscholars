@@ -5,6 +5,9 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { requireAdmin } from "@/lib/admin-auth";
 import type { OrderStatus } from "@/lib/types";
 
+const ORDER_ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const ORDER_STATUSES: OrderStatus[] = ["PENDING_PAYMENT","PAID","IN_PROGRESS","DELIVERED","COMPLETED","REVISION","CANCELLED"];
+
 const STATUS_LABEL: Record<OrderStatus, string> = {
   PENDING_PAYMENT: "Payment Pending",
   PAID: "Paid",
@@ -33,6 +36,7 @@ async function applyStatusUpdate(
   user: { id: string },
   profile: { full_name: string } | null
 ): Promise<{ success: boolean; error?: string }> {
+  if (!ORDER_ID_RE.test(orderId) || !ORDER_STATUSES.includes(newStatus)) return { success: false, error: "Invalid order update." };
   const supabase = createServiceClient();
   const { data: order, error: fetchError } = await supabase
     .from("orders")
@@ -104,6 +108,7 @@ export async function bulkUpdateOrderStatus(
   newStatus: OrderStatus
 ): Promise<{ updated: number; skipped: number; errors: string[] }> {
   const { user, profile } = await requireAdmin();
+  if (!ORDER_STATUSES.includes(newStatus) || !Array.isArray(orders) || orders.length > 100) return { updated: 0, skipped: Array.isArray(orders) ? orders.length : 0, errors: ["Invalid bulk update."] };
 
   let updated = 0;
   let skipped = 0;

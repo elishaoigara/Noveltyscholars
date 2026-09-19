@@ -37,6 +37,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ received: true });
     }
 
+    if (!/^[A-Za-z0-9._-]{1,160}$/.test(event.data.reference)) return NextResponse.json({ received: true, ignored: true });
+
     const serviceClient = createServiceClient();
     const { data: payment, error: paymentError } = await serviceClient
       .from("payments")
