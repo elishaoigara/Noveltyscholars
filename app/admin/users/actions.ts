@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 import { requireAdmin } from "@/lib/admin-auth";
 import { createServiceClient } from "@/lib/supabase/service";
 
@@ -9,6 +10,7 @@ export async function updateUserRole(
   newRole: "STUDENT" | "ADMIN"
 ): Promise<{ success: boolean; error?: string }> {
   const { user } = await requireAdmin();
+  if (!z.string().uuid().safeParse(userId).success) return { success: false, error: "Invalid user." };
 
   if (userId === user.id && newRole === "STUDENT") {
     return {
@@ -34,6 +36,7 @@ export async function toggleUserBan(
   banned: boolean
 ): Promise<{ success: boolean; error?: string }> {
   const { user } = await requireAdmin();
+  if (!z.string().uuid().safeParse(userId).success || typeof banned !== "boolean") return { success: false, error: "Invalid user." };
 
   if (userId === user.id) {
     return { success: false, error: "You can't ban your own account." };
