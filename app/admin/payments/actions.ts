@@ -9,6 +9,7 @@ import { sendPaymentNotifications } from "@/lib/notifications";
 
 export async function reconcilePayment(reference: string) {
   await requireAdmin();
+  if (typeof reference !== "string" || !/^[A-Za-z0-9._-]{1,160}$/.test(reference)) return { success: false, error: "Invalid payment reference." };
   const db = createServiceClient();
   const { data: payment } = await db.from("payments").select("reference,expected_amount,currency,status").eq("reference", reference).single();
   if (!payment) return { success: false, error: "Payment not found." };
