@@ -34,7 +34,7 @@ export async function requireAdmin() {
   const { user, profile } = await getCurrentProfile();
 
   if (!user) redirect("/login");
-  if (!profile || profile.role !== "ADMIN") redirect("/dashboard");
+  if (!profile || profile.role !== "ADMIN" || profile.is_banned) redirect("/dashboard");
 
   return { user, profile };
 }
